@@ -56,7 +56,12 @@ for (var i = 0; i < 60; i++)
 
 function startpractice() {
 
+	notesplayed = 0;
+	
 	for (i = 8; i >= 1; i--){
+		
+	document.getElementById("note" + i).style.backgroundColor = "transparent";
+		
 	var x = Math.floor((Math.random() * 26));
 
     	document.getElementById("note" + i).style.top = positions[x] + 2 + "px";
