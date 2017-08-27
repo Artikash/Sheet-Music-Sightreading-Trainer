@@ -25,9 +25,9 @@ for (var i = 0; i < 60; i++)
 
 function startpractice() {
 	var x = Math.floor((Math.random() * 26));
-    document.getElementById("note").style.top = positions[x] + 2 + "px";
+    	document.getElementById("note").style.top = positions[x] + 2 + "px";
 	currentnote = notemap[x];
-	document.getElementById("testhere").textContent = notemap[x];
+	// document.getElementById("testhere").textContent = notemap[x];
 	if (linesneeded[x] == true) {document.getElementById("note").src = "notewithline.png";} else {document.getElementById("note").src = "note.png";}
 }
 
@@ -120,7 +120,7 @@ function interpret_correlation_result(event)
 	if (confidence > confidence_threshold)
 	{
 		var dominant_frequency = test_frequencies[maximum_index];
-		document.getElementById("note-name").textContent = dominant_frequency.name;
+		// document.getElementById("note-name").textContent = dominant_frequency.name;
 		if (dominant_frequency.name == currentnote) {startpractice();}
 	}
 }
@@ -135,7 +135,7 @@ function interpret_correlation_result(event)
 	<img id="note" src="notewithline.png" alt="" width="29" height="15">
 </div>
 <h1 id="note-name"></h1>
-<p id="testhere">stuff</p>
+<p id="testhere"></p>
 <button type="button"
 onclick="startpractice()">
 Start</button>
