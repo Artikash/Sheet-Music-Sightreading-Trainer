@@ -24,7 +24,7 @@ var linesneeded = [true,false,true,false,true,false,true,false,true,false,true,f
 
 var notemap = ["A","G","F","E","D","C","B","A","G","F","E","D","C","C","B","A","G","F","E","D","C","B","A","G","F","E"];
 
-var currentnote = "C";
+var currentnote = "";
 
 var maxwhitenoise = 0;
 
@@ -56,7 +56,7 @@ function startpractice() {
 
 	var x = Math.floor((Math.random() * 26));
 
-    	document.getElementById("note").style.top = positions[x] + 2 + "px";
+    	document.getElementById("note1").style.top = positions[x] + 2 + "px";
 
 	currentnote = notemap[x];
 
@@ -280,7 +280,21 @@ function interpret_correlation_result(event)
 
 	<img src="staff.png" alt="" width="650" height="230">
 
-	<img id="note" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note1" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note2" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note3" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note4" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note5" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note6" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note7" src="notewithline.png" alt="" width="29" height="15">
+
+	<img id="note8" src="notewithline.png" alt="" width="29" height="15">
 
 </div>
 
@@ -298,7 +312,7 @@ Start</button>
 
 
 
-#container img[id="note"] {
+#container img[id="note1"] {
 
 
 
@@ -308,7 +322,21 @@ Start</button>
 
   top: 109px;
 
-  left: 350px;
+  left: 150px;
+
+}
+
+	img[id="note2"] {
+
+
+
+
+
+  position: fixed;
+
+  top: 109px;
+
+  left: 200px;
 
 }
 
