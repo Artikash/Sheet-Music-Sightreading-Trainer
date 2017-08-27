@@ -11,7 +11,7 @@ var test_frequencies = [];
 var positions = [14,22,30,38,46,54,62,70,78,85,93,101,109,125,133,141,148,156,164,172,180,188,196,204,212,220];
 var linesneeded = [true,false,true,false,true,false,true,false,true,false,true,false,true,true,false,true,false,true,false,true,false,true,false,true,false,true];
 var notemap = ["A","G","F","E","D","C","B","A","G","F","E","D","C","C","B","A","G","F","E","D","C","B","A","G","F","E"];
-var currentnote = "C";
+var currentnote = "";
 var maxwhitenoise = 0;
 var whitenoisemeasurements = 0;
 
@@ -27,7 +27,7 @@ for (var i = 0; i < 60; i++)
 
 function startpractice() {
 	var x = Math.floor((Math.random() * 26));
-    	document.getElementById("note").style.top = positions[x] + 2 + "px";
+    	document.getElementById("note1").style.top = positions[x] + 2 + "px";
 	currentnote = notemap[x];
 	// document.getElementById("testhere").textContent = notemap[x];
 	if (linesneeded[x] == true) {document.getElementById("note").src = "notewithline.png";} else {document.getElementById("note").src = "note.png";}
@@ -139,7 +139,14 @@ function interpret_correlation_result(event)
 
 <div id="container">
 	<img src="staff.png" alt="" width="650" height="230">
-	<img id="note" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note1" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note2" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note3" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note4" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note5" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note6" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note7" src="notewithline.png" alt="" width="29" height="15">
+	<img id="note8" src="notewithline.png" alt="" width="29" height="15">
 </div>
 <h1 id="note-name"></h1>
 <p id="testhere"></p>
@@ -148,12 +155,19 @@ onclick="startpractice()">
 Start</button>
 <style>
 
-#container img[id="note"] {
+#container img[id="note1"] {
 
 
   position: fixed;
   top: 109px;
-  left: 350px;
+  left: 150px;
+}
+	img[id="note2"] {
+
+
+  position: fixed;
+  top: 109px;
+  left: 200px;
 }
 </style>
 </body>
