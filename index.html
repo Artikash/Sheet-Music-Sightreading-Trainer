@@ -32,7 +32,7 @@ var whitenoisemeasurements = 0;
 
 var notesplayed = 0;
 
-var staffnotes = ["","","","","","","",""]
+var staffnotes = ["","","","","","","",""];
 
 for (var i = 0; i < 60; i++)
 
@@ -76,7 +76,7 @@ function continuepractice() {
 	if (notesplayed == 7) {startpractice();}
 	else {		
 		notesplayed++;
-		document.getElementById("note" + notesplayed).style.top = "1000px"
+		document.getElementById("note" + notesplayed).style.top = "1000px";
 		currentnote = staffnotes[notesplayed];
 	}
 }
