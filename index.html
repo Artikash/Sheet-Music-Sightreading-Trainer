@@ -67,7 +67,8 @@ function startpractice() {
 
 	// document.getElementById("testhere").textContent = notemap[x];
 
-	if (linesneeded[x] == true) {document.getElementById("note" + i).src = "notewithline.png";} 
+	if (linesneeded[x] == true) {document.getElementById("note" + i).src = "notewithline.png";}
+		
 	else {document.getElementById("note" + i).src = "note.png";}
 	}
 }
@@ -76,7 +77,9 @@ function continuepractice() {
 	if (notesplayed == 7) {startpractice();}
 	else {		
 		notesplayed++;
-		document.getElementById("note" + notesplayed).style.top = "1000px";
+		
+		document.getElementById("note" + notesplayed).style.backgroundColor="#00FF00";
+		
 		currentnote = staffnotes[notesplayed];
 	}
 }
