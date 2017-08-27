@@ -54,16 +54,17 @@ for (var i = 0; i < 60; i++)
 
 function startpractice() {
 
+	for (i = 1; i<= 8; i++){
 	var x = Math.floor((Math.random() * 26));
 
-    	document.getElementById("note1").style.top = positions[x] + 2 + "px";
+    	document.getElementById("note" + i).style.top = positions[x] + 2 + "px";
 
 	currentnote = notemap[x];
 
 	// document.getElementById("testhere").textContent = notemap[x];
 
-	if (linesneeded[x] == true) {document.getElementById("note1").src = "notewithline.png";} else {document.getElementById("note1").src = "note.png";}
-
+	if (linesneeded[x] == true) {document.getElementById("note" + i).src = "notewithline.png";} else {document.getElementById("note" + i).src = "note.png";}
+	}
 }
 
 
