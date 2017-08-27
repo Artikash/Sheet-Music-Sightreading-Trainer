@@ -12,6 +12,8 @@ var positions = [14,22,30,38,46,54,62,70,78,85,93,101,109,125,133,141,148,156,16
 var linesneeded = [true,false,true,false,true,false,true,false,true,false,true,false,true,true,false,true,false,true,false,true,false,true,false,true,false,true];
 var notemap = ["A","G","F","E","D","C","B","A","G","F","E","D","C","C","B","A","G","F","E","D","C","B","A","G","F","E"];
 var currentnote = "C";
+var maxwhitenoise = 0;
+var whitenoisemeasurements = 0;
 
 for (var i = 0; i < 60; i++)
 {
@@ -110,14 +112,19 @@ function interpret_correlation_result(event)
 
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
-	}
-
+    }
+    if (whitenoisemeasurements < 10) {
+        whitenoisemeasurements++;
+        document.getElementById("testhere").textContent = whitenoisemeasurements;
+        if (maxwhitenoise < maximum_magnitude) { maxwhitenoise = maximum_magnitude; }
+    }
+    
 	// Compute the average magnitude. We'll only pay attention to frequencies
 	// with magnitudes significantly above average.
 	var average = magnitudes.reduce(function(a, b) { return a + b; }, 0) / magnitudes.length;
 	var confidence = maximum_magnitude / average;
-	var confidence_threshold = 15; // empirical, arbitrary.
-	if (confidence > confidence_threshold)
+    var confidence_threshold = 15; // empirical, arbitrary.
+    if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise)
 	{
 		var dominant_frequency = test_frequencies[maximum_index];
 		// document.getElementById("note-name").textContent = dominant_frequency.name;
@@ -125,7 +132,7 @@ function interpret_correlation_result(event)
 	}
 }
 </script>
-</head>
+
 
 
 <body>
