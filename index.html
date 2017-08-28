@@ -238,7 +238,7 @@
 
         }
 
-        if (whitenoisemeasurements < 10) {
+        if (whitenoisemeasurements < 10) {  // The white noise measurements make sure that white noise doesn't register as a note
 
             whitenoisemeasurements++;
 
@@ -249,6 +249,7 @@
             }
 
         }
+        if (whitenoisemeasurements == 10){whitenoisemeasurements++; startpractice();}
 
         // Compute the average magnitude. We'll only pay attention to frequencies
 
@@ -306,10 +307,6 @@
     <h1 id="note-name"></h1>
 
     <p id="testhere">v2.00.00</p>
-
-    <button type="button" onclick="startpractice()">
-
-        Start</button>
 
     <style>
         #container img[id="note1"] {
