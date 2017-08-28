@@ -255,7 +255,7 @@ function interpret_correlation_result(event)
 
         whitenoisemeasurements++;
 
-        //document.getElementById("testhere").textContent = whitenoisemeasurements;
+        document.getElementById("testhere").textContent = whitenoisemeasurements;
 
         if (maxwhitenoise < maximum_magnitude) { maxwhitenoise = maximum_magnitude; }
 
@@ -273,7 +273,7 @@ function interpret_correlation_result(event)
 
     var confidence_threshold = 15; // empirical, arbitrary.
 
-    if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise)
+    if (confidence > confidence_threshold)
 
 	{
 
