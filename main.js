@@ -112,7 +112,7 @@
 
 
 
-            var x = Math.floor((Math.random() * 26));
+            var x = Math.floor(Math.random() * 26);
 
 
 
@@ -268,7 +268,7 @@
 
 
 
-        var sample_length_milliseconds = 100;
+        var sample_length_milliseconds = 10;
 
 
 
@@ -456,7 +456,7 @@
 
 
 
-        if (whitenoisemeasurements < 10) {  // The white noise measurements make sure that white noise doesn't register as a note
+        if (whitenoisemeasurements < 200) {  // The white noise measurements make sure that white noise doesn't register as a note
 
 
 
@@ -478,7 +478,7 @@
 
         }
 
-        if (whitenoisemeasurements == 10){whitenoisemeasurements++; startpractice();}
+        if (whitenoisemeasurements == 200){whitenoisemeasurements++; startpractice();}
 
 
 
@@ -506,7 +506,7 @@
 
 
 
-        if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise)
+        if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2)
 
 
 
