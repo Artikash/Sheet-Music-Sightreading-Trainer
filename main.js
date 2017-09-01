@@ -2,7 +2,10 @@
 
 
 
-    var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+	var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+
+	var octaves = ["2", "3", "4", "5"];
 
 
 
@@ -10,15 +13,8 @@
 
 
 
-    var positions = [14, 22, 30, 38, 46, 54, 62, 70, 78, 85, 93, 101, 109, 125, 133, 141, 148, 156, 164, 172, 180, 188, 196, 204, 212, 220];
-
-
-
-    var linesneeded = [true, false, true, false, true, false, true, false, true, false, true, false, true, true, false, true, false, true, false, true, false, true, false, true, false, true];
-
-
-
-    var notemap = ["A", "G", "F", "E", "D", "C", "B", "A", "G", "F", "E", "D", "C", "C", "B", "A", "G", "F", "E", "D", "C", "B", "A", "G", "F", "E"];
+    var notemap = ['014A5L', '022G5', '030F5', '038E5', '046D5', '054C5', '062B4', '070A4', '078G4', '085F4', '093E4', '101D4', '109C4L', '125C4L', '133B3', '141A3', '148G3', '156F3', '164E3', '172D3', '180C3', '188B2', '196A2', '204G2', '212F2', '220E2L'];
+	//The above encodes note information like so: first 3 digits represent y coordinate of note, letter represents note, next digit represents octave, L at end signifies whether a ledger line is needed.
 
 
 
@@ -48,13 +44,13 @@
 
     {
 
-
+		
 
         var note_frequency = C2 * Math.pow(2, i / 12);
 
 
 
-        var note_name = notes[i % 12];
+		var note_name = notes[i % 12] + octaves[Math.ceil(note_frequency / C2) - 2];
 
 
 
@@ -94,15 +90,13 @@
 
     }
 
-
+	
 
     function startpractice() {
 
 
 
         notesplayed = 0;
-
-
 
         for (i = 8; i >= 1; i--) {
 
@@ -116,15 +110,15 @@
 
 
 
-            document.getElementById("note" + i).style.top = positions[x] + 2 + "px";
+			document.getElementById("note" + i).style.top = parseInt(notemap[x].substring(0,3), 10) + 2 + "px";
 
 
 
-            staffnotes[i - 1] = notemap[x];
+			staffnotes[i - 1] = notemap[x].substring(3,5);
 
 
 
-            currentnote = notemap[x];
+            currentnote = notemap[x].substring(3,5);
 
 
 
@@ -132,7 +126,7 @@
 
 
 
-            if (linesneeded[x] == true) {
+			if (notemap[x].length == 6) {
 
                 document.getElementById("note" + i).src = "notewithline.png";
 
@@ -268,7 +262,7 @@
 
 
 
-        var sample_length_milliseconds = 10;
+        var sample_length_milliseconds = 100;
 
 
 
@@ -456,7 +450,7 @@
 
 
 
-        if (whitenoisemeasurements < 200) {  // The white noise measurements make sure that white noise doesn't register as a note
+        if (whitenoisemeasurements < 20) {  // The white noise measurements make sure that white noise doesn't register as a note
 
 
 
@@ -478,7 +472,7 @@
 
         }
 
-        if (whitenoisemeasurements == 200){whitenoisemeasurements++; startpractice();}
+        if (whitenoisemeasurements == 20){whitenoisemeasurements++; startpractice();}
 
 
 
@@ -518,7 +512,7 @@
 
 
 
-            // document.getElementById("note-name").textContent = dominant_frequency.name;
+			//document.getElementById("note-name").textContent = dominant_frequency.name + dominant_frequency.frequency;
 
 
 
