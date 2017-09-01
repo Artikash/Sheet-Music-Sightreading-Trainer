@@ -52,7 +52,8 @@
 
 		var note_name = notes[i % 12] + octaves[Math.ceil(note_frequency / C2) - 2];
 
-
+	console.log(note_name);
+	console.log(note_frequency);
 
         var note = {
 
