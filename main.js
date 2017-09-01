@@ -36,7 +36,7 @@ function startpractice() {
 		staffnotes[i - 1] = notemap[x].substring(3, 5);
 		currentnote = notemap[x].substring(3, 5);
 		// document.getElementById("testhere").textContent = notemap[x];
-		if (notemap[x].length == 6) {
+		if (notemap[x].length === 6) {
 			document.getElementById("note" + i).src = "notewithline.png";
 		}
 		else {
@@ -46,7 +46,7 @@ function startpractice() {
 }
 
 function continuepractice() {
-	if (notesplayed == 7) {
+	if (notesplayed === 7) {
 		startpractice();
 	}
 	else {
@@ -126,7 +126,7 @@ function interpret_correlation_result(event) {
 			maxwhitenoise = maximum_magnitude;
 		}
 	}
-	if (whitenoisemeasurements == 20) {
+	if (whitenoisemeasurements === 20) {
 		whitenoisemeasurements++;
 		startpractice();
 	}
@@ -140,7 +140,7 @@ function interpret_correlation_result(event) {
 	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
 		//document.getElementById("note-name").textContent = dominant_frequency.name + dominant_frequency.frequency;
-		if (dominant_frequency.name == currentnote) {
+		if (dominant_frequency.name === currentnote) {
 			continuepractice();
 		}
 	}
