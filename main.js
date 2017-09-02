@@ -16,15 +16,7 @@ for (var i = 0; i < 48; i++) {
 		"frequency": note_frequency,
 		"name": note_name
 	};
-	var just_above = {
-		"frequency": note_frequency * Math.pow(2, 1 / 48),
-		"name": note_name
-	};
-	var just_below = {
-		"frequency": note_frequency * Math.pow(2, -1 / 48),
-		"name": note_name
-	};
-	test_frequencies = test_frequencies.concat([just_below, note, just_above]);
+	test_frequencies = test_frequencies.concat([note]);
 }
 
 function startpractice() {
@@ -35,7 +27,6 @@ function startpractice() {
 		document.getElementById("note" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) + 2 + "px";
 		staffnotes[i - 1] = notemap[x].substring(3, 5);
 		currentnote = notemap[x].substring(3, 5);
-		// document.getElementById("testhere").textContent = notemap[x];
 		if (notemap[x].length === 6) {
 			document.getElementById("note" + i).src = "notewithline.png";
 		}
@@ -55,9 +46,6 @@ function continuepractice() {
 		currentnote = staffnotes[notesplayed];
 	}
 }
-window.addEventListener("load", initialize);
-var correlation_worker = new Worker("correlation_worker.js");
-correlation_worker.addEventListener("message", interpret_correlation_result);
 
 function initialize() {
 	var get_user_media = navigator.getUserMedia;
@@ -77,7 +65,7 @@ function use_stream(stream) {
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor);
 	var buffer = [];
-	var sample_length_milliseconds = 100;
+	var sample_length_milliseconds = 50;
 	var recording = true;
 	// Need to leak this function into the global namespace so it doesn't get
 	// prematurely garbage-collected.
@@ -119,14 +107,15 @@ function interpret_correlation_result(event) {
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
 	}
-	if (whitenoisemeasurements < 20) { // The white noise measurements make sure that white noise doesn't register as a note.
+	if (whitenoisemeasurements < 16) { // The white noise measurements make sure that white noise doesn't register as a note.
+		document.getElementById("loading").textContent = "Calibrating microphone:" + (whitenoisemeasurements + 1) * 100 / 16 + "%";
 		whitenoisemeasurements++;
-		//document.getElementById("testhere").textContent = whitenoisemeasurements;
 		if (maxwhitenoise < maximum_magnitude) {
 			maxwhitenoise = maximum_magnitude;
 		}
 	}
-	if (whitenoisemeasurements === 20) {
+	if (whitenoisemeasurements === 16) {
+		document.getElementById("loading").textContent = "";
 		whitenoisemeasurements++;
 		startpractice();
 	}
@@ -139,9 +128,12 @@ function interpret_correlation_result(event) {
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
-		//document.getElementById("note-name").textContent = dominant_frequency.name + dominant_frequency.frequency;
 		if (dominant_frequency.name === currentnote) {
 			continuepractice();
 		}
 	}
 }
+
+window.addEventListener("load", initialize);
+var correlation_worker = new Worker("correlation_worker.js");
+correlation_worker.addEventListener("message", interpret_correlation_result);
