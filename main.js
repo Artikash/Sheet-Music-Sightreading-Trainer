@@ -119,7 +119,7 @@ function interpret_correlation_result(event) {
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
 	}
-	if (whitenoisemeasurements < 20) { // The white noise measurements make sure that white noise doesn't register as a note
+	if (whitenoisemeasurements < 20) { // The white noise measurements make sure that white noise doesn't register as a note.
 		whitenoisemeasurements++;
 		//document.getElementById("testhere").textContent = whitenoisemeasurements;
 		if (maxwhitenoise < maximum_magnitude) {
