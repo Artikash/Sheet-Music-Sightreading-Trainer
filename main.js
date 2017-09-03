@@ -2,7 +2,7 @@ var C2 = 65.41; // C2 note, in Hz.
 var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5"];
 var test_frequencies = [];
-var notemap = ['014A5L', '022G5', '030F5', '038E5', '046D5', '054C5', '062B4', '070A4', '078G4', '085F4', '093E4', '101D4', '109C4L', '125C4L', '133B3', '141A3', '148G3', '156F3', '164E3', '172D3', '180C3', '188B2', '196A2', '204G2', '212F2', '220E2L'];
+var notemap = ["014A5L", "022G5", "030F5", "038E5", "046D5", "054C5", "062B4", "070A4", "078G4", "085F4", "093E4", "101D4", "109C4L", "125C4L", "133B3", "141A3", "148G3", "156F3", "164E3", "172D3", "180C3", "188B3", "196A3", "204G3", "212F3", "220E3L"];
 //The above encodes note information like so: first 3 digits represent y coordinate of note, letter represents note, next digit represents octave, L at end signifies whether a ledger line is needed.
 var currentnote = "";
 var maxwhitenoise = 0;
