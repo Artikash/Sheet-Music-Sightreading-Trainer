@@ -23,10 +23,19 @@ function startpractice() {
 	notesplayed = 0;
 	for (i = 8; i >= 1; i--) {
 		document.getElementById("note" + i).style.backgroundColor = "transparent";
+		document.getElementById("sharp" + i).style.display = "none";
 		var x = Math.floor(Math.random() * 26);
+		var sharp;
+		var tempnote = notemap[x].substring(3, 5);
+		if (notemap[x].substring(3, 4).match("[CDFGA]") !== null && Math.random() > 0.50) {
+			tempnote = notemap[x].substring(3, 4) + "#" + notemap[x].substring(4,5);
+			document.getElementById("sharp" + i).style.display = "inline";
+			console.log(tempnote);
+		}
 		document.getElementById("note" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) + 2 + "px";
-		staffnotes[i - 1] = notemap[x].substring(3, 5);
-		currentnote = notemap[x].substring(3, 5);
+		document.getElementById("sharp" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) - 10 + "px";
+		staffnotes[i - 1] = tempnote;
+		currentnote = tempnote;
 		if (notemap[x].length === 6) {
 			document.getElementById("note" + i).src = "notewithline.png";
 		}
@@ -128,6 +137,7 @@ function interpret_correlation_result(event) {
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
+		console.log(dominant_frequency.name);
 		if (dominant_frequency.name === currentnote) {
 			continuepractice();
 		}
