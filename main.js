@@ -30,7 +30,6 @@ function startpractice() {
 		if (notemap[x].substring(3, 4).match("[CDFGA]") !== null && Math.random() > 0.50) {
 			tempnote = notemap[x].substring(3, 4) + "#" + notemap[x].substring(4,5);
 			document.getElementById("sharp" + i).style.display = "inline";
-			console.log(tempnote);
 		}
 		document.getElementById("note" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) + 2 + "px";
 		document.getElementById("sharp" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) - 10 + "px";
@@ -137,7 +136,6 @@ function interpret_correlation_result(event) {
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
-		console.log(dominant_frequency.name);
 		if (dominant_frequency.name === currentnote) {
 			continuepractice();
 		}
