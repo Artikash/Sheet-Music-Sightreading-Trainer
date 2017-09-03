@@ -8,3 +8,5 @@ Program will automatically use your microphone to determine whether you are play
 Once a note lights up you may continue and play the next note.
 
 Once every note is played a new random sequence of 8 notes is generated. Rinse and repeat. Read and play the notes as fast as you can!
+
+Thanks to Jonathan Bergknoff for the algorithm that converts microphone signals to notes!
