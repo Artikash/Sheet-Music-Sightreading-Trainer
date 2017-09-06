@@ -33,7 +33,7 @@ function startpractice() {
 		}
 		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + 2 + "px";
 		thissharp.style.top = parseInt(noteinfo.substring(0, 3), 10) - 10 + "px";
-		staffnotes[notenum - 1] = tempnote;
+		staffnotes[notenum] = tempnote;
 		currentnote = tempnote;
 		if (noteinfo.length === 6) {
 			this.src = "notewithline.png";
@@ -42,6 +42,7 @@ function startpractice() {
 			this.src = "note.png";
 		}
 	});
+	currentnote = staffnotes[0];
 }
 
 function continuepractice() {
@@ -137,6 +138,7 @@ function interpret_correlation_result(event) {
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
+		//console.log("expected" + currentnote + "actual" + dominant_frequency.name);
 		if (dominant_frequency.name === currentnote) {
 			continuepractice();
 		}
