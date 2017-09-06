@@ -22,20 +22,20 @@ for (var i = 0; i < 48; i++) {
 function startpractice() {
 	notesplayed = 0;	
 	$("[id^='note']").each(function (notenum) {
-		var x = Math.floor(Math.random() * 26);
+		var noteinfo = notemap[Math.floor(Math.random() * 26)];
 		var thissharp = document.getElementById("sharp" + (notenum + 1));
 		this.style.display = "inline";
 		thissharp.style.display = "none";
-		var tempnote = notemap[x].substring(3, 5);
-		if (notemap[x].substring(3, 4).match("[CDFGA]") !== null && Math.random() > 0.50) {
-			tempnote = notemap[x].substring(3, 4) + "#" + notemap[x].substring(4, 5);
+		var tempnote = noteinfo.substring(3, 5);
+		if (noteinfo.substring(3, 4).match("[CDFGA]") !== null && Math.random() > 0.50) {
+			tempnote = noteinfo.substring(3, 4) + "#" + noteinfo.substring(4, 5);
 			thissharp.style.display = "inline";
 		}
-		this.style.top = parseInt(notemap[x].substring(0, 3), 10) + 2 + "px";
-		thissharp.style.top = parseInt(notemap[x].substring(0, 3), 10) - 10 + "px";
+		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + 2 + "px";
+		thissharp.style.top = parseInt(noteinfo.substring(0, 3), 10) - 10 + "px";
 		staffnotes[notenum - 1] = tempnote;
 		currentnote = tempnote;
-		if (notemap[x].length === 6) {
+		if (noteinfo.length === 6) {
 			this.src = "notewithline.png";
 		}
 		else {
