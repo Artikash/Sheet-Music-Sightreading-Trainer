@@ -20,28 +20,28 @@ for (var i = 0; i < 48; i++) {
 }
 
 function startpractice() {
-	notesplayed = 0;
-	for (i = 8; i >= 1; i--) {
-		document.getElementById("note" + i).style.backgroundColor = "transparent";
-		document.getElementById("sharp" + i).style.display = "none";
+	notesplayed = 0;	
+	$("[id^='note']").each(function (notenum) {
 		var x = Math.floor(Math.random() * 26);
-		var sharp;
+		var thissharp = document.getElementById("sharp" + (notenum + 1));
+		this.style.display = "inline";
+		thissharp.style.display = "none";
 		var tempnote = notemap[x].substring(3, 5);
 		if (notemap[x].substring(3, 4).match("[CDFGA]") !== null && Math.random() > 0.50) {
-			tempnote = notemap[x].substring(3, 4) + "#" + notemap[x].substring(4,5);
-			document.getElementById("sharp" + i).style.display = "inline";
+			tempnote = notemap[x].substring(3, 4) + "#" + notemap[x].substring(4, 5);
+			thissharp.style.display = "inline";
 		}
-		document.getElementById("note" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) + 2 + "px";
-		document.getElementById("sharp" + i).style.top = parseInt(notemap[x].substring(0, 3), 10) - 10 + "px";
-		staffnotes[i - 1] = tempnote;
+		this.style.top = parseInt(notemap[x].substring(0, 3), 10) + 2 + "px";
+		thissharp.style.top = parseInt(notemap[x].substring(0, 3), 10) - 10 + "px";
+		staffnotes[notenum - 1] = tempnote;
 		currentnote = tempnote;
 		if (notemap[x].length === 6) {
-			document.getElementById("note" + i).src = "notewithline.png";
+			this.src = "notewithline.png";
 		}
 		else {
-			document.getElementById("note" + i).src = "note.png";
+			this.src = "note.png";
 		}
-	}
+	});
 }
 
 function continuepractice() {
@@ -50,7 +50,8 @@ function continuepractice() {
 	}
 	else {
 		notesplayed++;
-		document.getElementById("note" + notesplayed).style.backgroundColor = "#00FF00";
+		document.getElementById("note" + notesplayed).style.display = "none";
+		document.getElementById("sharp" + notesplayed).style.display = "none";
 		currentnote = staffnotes[notesplayed];
 	}
 }
