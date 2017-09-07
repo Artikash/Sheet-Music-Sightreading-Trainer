@@ -2,7 +2,7 @@ var C2 = 65.41; // C2 note, in Hz.
 var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5"];
 var test_frequencies = [];
-var notemap = ["014A5L", "022G5", "030F5", "038E5", "046D5", "054C5", "062B4", "070A4", "078G4", "085F4", "093E4", "101D4", "109C4L", "125C4L", "133B3", "141A3", "148G3", "156F3", "164E3", "172D3", "180C3", "188B3", "196A3", "204G3", "212F3", "220E3L"];
+var notemap = ["016A5L", "024G5", "032F5", "040E5", "048D5", "056C5", "064B4", "072A4", "080G4", "087F4", "095E4", "103D4", "111C4L", "127C4L", "135B3", "143A3", "150G3", "158F3", "166E3", "174D3", "182C3", "190B2", "198A2", "206G2", "214F2", "222E2L"];
 //The above encodes note information like so: first 3 digits represent y coordinate of note, letter represents note, next digit represents octave, L at end signifies whether a ledger line is needed.
 var currentnote = "";
 var maxwhitenoise = 0;
@@ -12,47 +12,34 @@ var staffnotes = ["", "", "", "", "", "", "", ""];
 for (var i = 0; i < 48; i++) {
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
-	var note = {
-		"frequency": note_frequency,
-		"name": note_name
-	};
+	var note = { "frequency": note_frequency, "name": note_name };
 	test_frequencies = test_frequencies.concat([note]);
 }
 
 function startpractice() {
-	notesplayed = 0;	
+	notesplayed = 0;
+	$("[id^='note']").fadeIn(0);
 	$("[id^='note']").each(function (notenum) {
-		var noteinfo = notemap[Math.floor(Math.random() * 26)];
-		var thissharp = document.getElementById("sharp" + (notenum + 1));
-		this.style.display = "inline";
-		thissharp.style.display = "none";
+		var noteinfo = notemap[Math.floor(Math.random() * 26)]; 
 		var tempnote = noteinfo.substring(3, 5);
 		if (noteinfo.substring(3, 4).match("[CDFGA]") !== null && Math.random() > 0.50) {
 			tempnote = noteinfo.substring(3, 4) + "#" + noteinfo.substring(4, 5);
-			thissharp.style.display = "inline";
+			$("#sharp" + (notenum + 1)).fadeIn(0);
 		}
-		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + 2 + "px";
-		thissharp.style.top = parseInt(noteinfo.substring(0, 3), 10) - 10 + "px";
 		staffnotes[notenum] = tempnote;
 		currentnote = tempnote;
-		if (noteinfo.length === 6) {
-			this.src = "notewithline.png";
-		}
-		else {
-			this.src = "note.png";
-		}
+		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + "px";
+		document.getElementById("sharp" + (notenum + 1)).style.top = parseInt(noteinfo.substring(0, 3), 10) - 12 + "px";
+		this.src = noteinfo.length === 6 ? "notewithline.png" : "note.png";
 	});
 	currentnote = staffnotes[0];
 }
 
 function continuepractice() {
-	if (notesplayed === 7) {
-		startpractice();
-	}
+	if (notesplayed === 7) { startpractice(); }
 	else {
 		notesplayed++;
-		document.getElementById("note" + notesplayed).style.display = "none";
-		document.getElementById("sharp" + notesplayed).style.display = "none";
+		$("[id $=" + notesplayed + "]").fadeOut(500);
 		currentnote = staffnotes[notesplayed];
 	}
 }
@@ -61,10 +48,8 @@ function initialize() {
 	var get_user_media = navigator.getUserMedia;
 	get_user_media = get_user_media || navigator.webkitGetUserMedia;
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
-	get_user_media.call(navigator,
-		{
-			"audio": true
-		}, use_stream, function () { });
+	get_user_media.call(navigator, { "audio": true }, use_stream, function () { });
+	$("[id^='sharp']").fadeOut(0);
 }
 
 function use_stream(stream) {
@@ -138,8 +123,10 @@ function interpret_correlation_result(event) {
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
+		var lenient_frequency1 = test_frequencies[maximum_index - 12];
+		var lenient_frequency2 = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
 		//console.log("expected" + currentnote + "actual" + dominant_frequency.name);
-		if (dominant_frequency.name === currentnote) {
+		if (dominant_frequency.name === currentnote || lenient_frequency1.name === currentnote || lenient_frequency2.name === currentnote) {
 			continuepractice();
 		}
 	}
