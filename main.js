@@ -3,8 +3,8 @@ var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5", "6", "7"];
 var test_frequencies = [];
 var notemap =
-	["016A5L", "024G5", "032F5", "040E5", "048D5", "056C5", "064B4", "072A4", "080G4", "087F4", "095E4", "103D4", "111C4L"
-	,"127C4L", "135B3", "143A3", "150G3", "158F3", "166E3", "174D3", "182C3", "190B2", "198A2", "206G2", "214F2", "222E2L"];
+	["222E2L","214F2","206G2","198A2","190B2","182C3","174D3","166E3","158F3","150G3","143A3","135B3","127C4L"
+	,"111C4L","103D4","095E4","087F4","080G4","072A4","064B4","056C5","048D5","040E5","032F5","024G5","016A5L"];
 //The above encodes note info like so: first 3 digits represent y coord, letter represents note name
 //next digit represents octave, L is added at the end if a ledger line is needed.
 var currentnote = "";
@@ -12,6 +12,8 @@ var maxwhitenoise = 0;
 var whitenoisemeasurements = 0;
 var notesplayed = 0;
 var staffnotes = ["", "", "", "", "", "", "", ""];
+var minnote = 0;
+var maxnote = 26;
 for (var i = 0; i < 72; i++) {
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
@@ -24,6 +26,7 @@ function initialize() {
 	get_user_media = get_user_media || navigator.webkitGetUserMedia;
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
 	get_user_media.call(navigator, { "audio": true }, use_stream, function () { });
+	updatenoterange();
 	$("[id^='sharp']").fadeOut(0);
 }
 
@@ -103,14 +106,13 @@ function startpractice() {
 	notesplayed = 0;
 	$("[id^='note']").fadeIn(0);
 	$("[id^='note']").each(function (notenum) {
-		var noteinfo = notemap[Math.floor(Math.random() * 26)];
+		var noteinfo = notemap[Math.floor(+minnote + Math.random() * (maxnote - minnote))];
 		var tempnote = noteinfo.substring(3, 5);
 		if (noteinfo.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) {
 			tempnote = noteinfo.substring(3, 4) + "#" + noteinfo.substring(4, 5);
 			$("#sharp" + notenum).fadeIn(0);
 		}
 		staffnotes[notenum] = tempnote;
-		currentnote = tempnote;
 		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + "px";
 		document.getElementById("sharp" + notenum).style.top = parseInt(noteinfo.substring(0, 3), 10) - 12 + "px";
 		this.src = noteinfo.length === 6 ? "notewithline.png" : "note.png";
@@ -127,6 +129,18 @@ function continuepractice() {
 	}
 }
 
+async function updatenoterange() {
+	await new Promise(resolve => setTimeout(resolve, 5));
+	minnote = document.getElementById("minnote").value;
+	maxnote = document.getElementById("maxnote").value;
+	if (+minnote > +maxnote) { document.getElementById("maxnote").value = +minnote + 1; updatenoterange(); }
+	document.getElementById("minnotedisplay").textContent = "Lowest note: " + notemap[minnote].substring(3, 5);
+	document.getElementById("maxnotedisplay").textContent = "Highest note: E2";
+	document.getElementById("maxnotedisplay").textContent = "Highest note: " + notemap[maxnote - 1].substring(3, 5);
+}
+
+document.getElementById("minnote").addEventListener("mouseup", updatenoterange);
+document.getElementById("maxnote").addEventListener("mouseup", updatenoterange);
 window.addEventListener("load", initialize);
 var correlation_worker = new Worker("correlation_worker.js");
 correlation_worker.addEventListener("message", interpret_correlation_result);
