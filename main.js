@@ -131,9 +131,9 @@ function continuepractice() {
 
 async function updatenoterange() {
 	await new Promise(resolve => setTimeout(resolve, 5));
-	minnote = document.getElementById("minnote").value;
-	maxnote = document.getElementById("maxnote").value;
-	if (+minnote > +maxnote) { document.getElementById("maxnote").value = +minnote + 1; updatenoterange(); }
+	minnote = $("#minnote").val();
+	maxnote = $("#maxnote").val();
+	if (+minnote > +maxnote) { $("#maxnote").val(+minnote + 1); updatenoterange(); }
 	document.getElementById("minnotedisplay").textContent = "Lowest note: " + notemap[minnote].substring(3, 5);
 	document.getElementById("maxnotedisplay").textContent = "Highest note: E2";
 	document.getElementById("maxnotedisplay").textContent = "Highest note: " + notemap[maxnote - 1].substring(3, 5);
