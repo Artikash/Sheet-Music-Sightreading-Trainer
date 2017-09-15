@@ -2,24 +2,30 @@ var C2 = 65.41; // C2 note, in Hz.
 var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5", "6", "7"];
 var test_frequencies = [];
-var notemap =
+var note_map =
 	["222E2L","214F2","206G2","198A2","190B2","182C3","174D3","166E3","158F3","150G3","143A3","135B3","127C4L"
 	,"111C4L","103D4","095E4","087F4","080G4","072A4","064B4","056C5","048D5","040E5","032F5","024G5","016A5L"];
 //The above encodes note info like so: first 3 digits represent y coord, letter represents note name
 //next digit represents octave, L is added at the end if a ledger line is needed.
-var currentnote = "";
-var maxwhitenoise = 0;
-var whitenoisemeasurements = 0;
-var notesplayed = 0;
-var staffnotes = ["", "", "", "", "", "", "", ""];
-var minnote = 0;
-var maxnote = 26;
+var current_note = "";
+var max_whitenoise = 0;
+var whitenoise_measurements = 0;
+var notes_played = 0;
+var staff_notes = ["", "", "", "", "", "", "", ""];
+var min_note = 0;
+var max_note = 26;
 for (var i = 0; i < 72; i++) {
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
 	var note = { "frequency": note_frequency, "name": note_name };
 	test_frequencies = test_frequencies.concat([note]);
 }
+
+document.getElementById("minnote").addEventListener("mouseup", updatenoterange);
+document.getElementById("maxnote").addEventListener("mouseup", updatenoterange);
+window.addEventListener("load", initialize);
+var correlation_worker = new Worker("correlation_worker.js");
+correlation_worker.addEventListener("message", interpret_correlation_result);
 
 function initialize() {
 	var get_user_media = navigator.getUserMedia;
@@ -78,14 +84,14 @@ function interpret_correlation_result(event) {
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
 	}
-	if (whitenoisemeasurements < 16) { // The white noise measurements make sure that white noise doesn't register as a note.
-		document.getElementById("loading").textContent = "Calibrating microphone:" + (whitenoisemeasurements + 1) * 100 / 16 + "%";
-		whitenoisemeasurements++;
-		if (maxwhitenoise < maximum_magnitude) { maxwhitenoise = maximum_magnitude; }
+	if (whitenoise_measurements < 5) { // The white noise measurements make sure that white noise doesn't register as a note.
+		document.getElementById("loading").textContent = "Calibrating microphone:" + (whitenoise_measurements + 1) * 100 / 5 + "%"; 
+		whitenoise_measurements++;
+		if (max_whitenoise < maximum_magnitude) { max_whitenoise = maximum_magnitude; }
 	}
-	if (whitenoisemeasurements === 16) {
+	if (whitenoise_measurements === 5) { // Once enough data on white noise is gathered, generate sheet music and start listening.
 		document.getElementById("loading").textContent = "";
-		whitenoisemeasurements++;
+		whitenoise_measurements++;
 		startpractice();
 	}
 	// Compute the average magnitude. We'll only pay attention to frequencies
@@ -93,54 +99,48 @@ function interpret_correlation_result(event) {
 	var average = magnitudes.reduce(function (a, b) { return a + b; }, 0) / magnitudes.length;
 	var confidence = maximum_magnitude / average;
 	var confidence_threshold = 15; // empirical, arbitrary.
-	if (confidence > confidence_threshold && maximum_magnitude > maxwhitenoise * 2) {
+	if (confidence > confidence_threshold && maximum_magnitude > max_whitenoise * 2) {
 		var dominant_frequency = test_frequencies[maximum_index];
 		var alt1 = test_frequencies[maximum_index + 12];
 		var alt2 = test_frequencies[maximum_index - 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
-		console.log("expected" + currentnote + "actual" + dominant_frequency.name);
-		if (dominant_frequency.name === currentnote || alt1.name === currentnote || alt2.name === currentnote) { continuepractice(); }
+		console.log("expected" + current_note + "actual" + dominant_frequency.name);
+		if (dominant_frequency.name === current_note || alt1.name === current_note || alt2.name === current_note) { continuepractice(); }
 	}
 }
 
 function startpractice() {
-	notesplayed = 0;
+	notes_played = 0;
 	$("[id^='note']").fadeIn(0);
 	$("[id^='note']").each(function (notenum) {
-		var noteinfo = notemap[Math.floor(+minnote + Math.random() * (maxnote - minnote))];
-		var tempnote = noteinfo.substring(3, 5);
-		if (noteinfo.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) {
+		var noteinfo = note_map[Math.floor(+min_note + Math.random() * (max_note - min_note))]; // Decide which note to generate.
+		var tempnote = noteinfo.substring(3, 5); 
+		if (noteinfo.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) { // Make notes sharp.
 			tempnote = noteinfo.substring(3, 4) + "#" + noteinfo.substring(4, 5);
 			$("#sharp" + notenum).fadeIn(0);
 		}
-		staffnotes[notenum] = tempnote;
+		staff_notes[notenum] = tempnote;
 		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + "px";
 		document.getElementById("sharp" + notenum).style.top = parseInt(noteinfo.substring(0, 3), 10) - 12 + "px";
 		this.src = noteinfo.length === 6 ? "notewithline.png" : "note.png";
 	});
-	currentnote = staffnotes[0];
+	current_note = staff_notes[0];
 }
 
 function continuepractice() {
-	if (notesplayed === 7) { startpractice(); }
+	if (notes_played === 7) { startpractice(); }
 	else {
-		$("[id $=" + notesplayed + "]").fadeOut(500);
-		notesplayed++;
-		currentnote = staffnotes[notesplayed];
+		$("[id $=" + notes_played + "]").fadeOut(500);
+		notes_played++; // Please note the order of these statements if you're going through the code in your head.
+		current_note = staff_notes[notes_played]; 
 	}
 }
 
 async function updatenoterange() {
-	await new Promise(resolve => setTimeout(resolve, 5));
-	minnote = $("#minnote").val();
-	maxnote = $("#maxnote").val();
-	if (+minnote > +maxnote) { $("#maxnote").val(+minnote + 1); updatenoterange(); }
-	document.getElementById("minnotedisplay").textContent = "Lowest note: " + notemap[minnote].substring(3, 5);
+	await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds.
+	min_note = $("#minnote").val();
+	max_note = $("#maxnote").val();
+	if (+min_note > +max_note) { $("#maxnote").val(+min_note + 1); updatenoterange(); }
+	document.getElementById("minnotedisplay").textContent = "Lowest note: " + note_map[min_note].substring(3, 5);
 	document.getElementById("maxnotedisplay").textContent = "Highest note: E2";
-	document.getElementById("maxnotedisplay").textContent = "Highest note: " + notemap[maxnote - 1].substring(3, 5);
+	document.getElementById("maxnotedisplay").textContent = "Highest note: " + note_map[max_note - 1].substring(3, 5);
 }
-
-document.getElementById("minnote").addEventListener("mouseup", updatenoterange);
-document.getElementById("maxnote").addEventListener("mouseup", updatenoterange);
-window.addEventListener("load", initialize);
-var correlation_worker = new Worker("correlation_worker.js");
-correlation_worker.addEventListener("message", interpret_correlation_result);
