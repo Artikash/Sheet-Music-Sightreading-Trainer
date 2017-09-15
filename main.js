@@ -108,17 +108,17 @@ function interpret_correlation_result(event) {
 	var confidence = maximum_magnitude / average;
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > max_whitenoise * 3) {
-		var dominant_frequency = test_frequencies[maximum_index].name;
-		var alt1 = test_frequencies[maximum_index + 12].name; //The algorithm can be off by 1 octave, so need these as workarounds.
-		var alt2 = test_frequencies[maximum_index - 12]; //Sometimes this tries to access notes which don't exist so the name is only 
-		console.log("expected" + current_note + "actual" + dominant_frequency); // accessed at the end of the "or" so it doesn't bug out
-		if (dominant_frequency === current_note || alt1 === current_note || alt2.name === current_note) { continue_practice(true); }
+		var dominant_frequency = test_frequencies[maximum_index];
+		var a = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
+		var b = test_frequencies[maximum_index - 12]; 
+		console.log("expected" + current_note + "actual" + dominant_frequency);
+		if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
 	}
 }
 
 function start_practice() {
 	bar = $("#barcheckbox").prop("checked");
-	bar_duration = 540000 / $("#bpm").val();
+	bar_duration = 540000 / $("#bpm").val(); // Conversion of user input to animation speed.
 	notes_passed = 0;
 	notes_played = 0;
 	$("#bar").css("left", "100px");
@@ -144,7 +144,7 @@ function continue_practice(success) {
 	if (notes_played === 7 && !bar) { start_practice(); }
 	else {
 		if (success && (!bar || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
-		else if (success) { return; }
+		else if (success) { return; } // Occurs when user plays faster than bar.
 		else { $("[id $=note" + notes_played + "]").prop("src", "rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
 		current_note = staff_notes[notes_played]; 
@@ -153,7 +153,7 @@ function continue_practice(success) {
 
 async function use_bar() {
 	while (true) {
-		await new Promise(resolve => setTimeout(resolve, 100));
+		await new Promise(resolve => setTimeout(resolve, 10));
 		if (parseInt($("#bar").css("left").substring(0, 3)) > 170 + notes_passed * 50) {
 			notes_passed++;
 			if (notes_passed > notes_played) { continue_practice(false); }
