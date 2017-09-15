@@ -111,7 +111,7 @@ function interpret_correlation_result(event) {
 		var dominant_frequency = test_frequencies[maximum_index];
 		var a = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
-		console.log("expected" + current_note + "actual" + dominant_frequency);
+		console.log("expected" + current_note + "actual" + dominant_frequency.name);
 		if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
 	}
 }
