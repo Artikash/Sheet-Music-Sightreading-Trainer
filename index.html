@@ -9,6 +9,8 @@
 <body>
     <div id="container"> 
 		<img id="staff" src="staff.png" alt="" width="650" height="230"> 
+		<img id="bar" src="bar.png" alt="" width="2" height="230">
+
 		<img id="note0" src="notewithline.png" alt="" width="29" height="15"> 
 		<img id="note1" src="notewithline.png" alt="" width="29" height="15"> 
 		<img id="note2" src="notewithline.png" alt="" width="29" height="15"> 
@@ -28,16 +30,26 @@
 	</div>
     <h1>Sheet Music Sight Reading Practice</h1>
     <h2 id="loading"></h2>
-	<input type="range" id="minnote" min="0" max="25"> 
+	<input type="checkbox" id="barcheckbox" checked>Limited time to play notes?<br>
+	<img id="bpmimg" src="bpmfield.png" alt="" width="80" height="25"> 
+	<input type="text" id="bpm" value="10"> <p></p>
+	<input type="range" id="minnote" min="0" max="25" value="0"> 
 	<p id="minnotedisplay">Lowest Note: </p>
-	<input type="range" id="maxnote" min="0" max="26"> 
+	<input type="range" id="maxnote" min="0" max="26" value="26"> 
 	<p id="maxnotedisplay">Highest Note: </p>
     <p>First, allow microphone access. This will make a random sequence of 8 notes appear on the grand staff. You should then start playing the notes on your instrument.</p>
     <p>Website will automatically use your microphone to determine whether you are playing the correct note: once you do, the note will dissapear. You may then continue and play the next note.</p>
-    <p>Once every note is played a new random sequence of 8 notes is generated. Rinse and repeat. Read and play the notes as fast as you can!</p>
-    <p>Thanks to Jonathan Bergknoff for the algorithm that converts microphone signals to notes!</p>
-    <p>v6.00.00</p>
+	<p>If you check "limited time to play notes" and don't play the notes in time, they will turn red. You should continue to the next note once this happens.</p>
+	<p>Once the bar reaches the end (or every note is played if disabled) a new random sequence of 8 notes is generated. Rinse and repeat. Read and play the notes as fast as you can!</p>
+    <p>Thanks to Jonathan Bergknoff for the algorithm that converts microphone input to notes!</p>
+    <p>v7.00.00</p>
     <style>
+		img[id="bar"] {
+			position: fixed;
+			top: 0px;
+			left: 100px;
+		}
+
         img[id="note0"] {
             position: fixed;
             top: 109px;
