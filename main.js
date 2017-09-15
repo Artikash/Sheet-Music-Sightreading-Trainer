@@ -21,8 +21,8 @@ for (var i = 0; i < 72; i++) {
 	test_frequencies = test_frequencies.concat([note]);
 }
 
-document.getElementById("minnote").addEventListener("mouseup", updatenoterange);
-document.getElementById("maxnote").addEventListener("mouseup", updatenoterange);
+document.getElementById("minnote").addEventListener("mouseup", update_note_range);
+document.getElementById("maxnote").addEventListener("mouseup", update_note_range);
 window.addEventListener("load", initialize);
 var correlation_worker = new Worker("correlation_worker.js");
 correlation_worker.addEventListener("message", interpret_correlation_result);
@@ -32,7 +32,7 @@ function initialize() {
 	get_user_media = get_user_media || navigator.webkitGetUserMedia;
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
 	get_user_media.call(navigator, { "audio": true }, use_stream, function () { });
-	updatenoterange();
+	update_note_range();
 	$("[id^='sharp']").fadeOut(0);
 }
 
@@ -84,15 +84,15 @@ function interpret_correlation_result(event) {
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
 	}
-	if (whitenoise_measurements < 5) { // The white noise measurements make sure that white noise doesn't register as a note.
+	if (whitenoise_measurements < 5) { // The white noisemeasurements make sure that white noise doesn't register as a note.
 		document.getElementById("loading").textContent = "Calibrating microphone:" + (whitenoise_measurements + 1) * 100 / 5 + "%"; 
 		whitenoise_measurements++;
 		if (max_whitenoise < maximum_magnitude) { max_whitenoise = maximum_magnitude; }
 	}
-	if (whitenoise_measurements === 5) { // Once enough data on white noise is gathered, generate sheet music and start listening.
+	if (whitenoise_measurements === 5) { // Once enough data on whitenoise is gathered, generate sheet music and start listening.
 		document.getElementById("loading").textContent = "";
 		whitenoise_measurements++;
-		startpractice();
+		start_practice();
 	}
 	// Compute the average magnitude. We'll only pay attention to frequencies
 	// with magnitudes significantly above average.
@@ -104,30 +104,30 @@ function interpret_correlation_result(event) {
 		var alt1 = test_frequencies[maximum_index + 12];
 		var alt2 = test_frequencies[maximum_index - 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
-		if (dominant_frequency.name === current_note || alt1.name === current_note || alt2.name === current_note) { continuepractice(); }
+		if (dominant_frequency.name === current_note || alt1.name === current_note || alt2.name === current_note) { continue_practice(); }
 	}
 }
 
-function startpractice() {
+function start_practice() {
 	notes_played = 0;
 	$("[id^='note']").fadeIn(0);
-	$("[id^='note']").each(function (notenum) {
-		var noteinfo = note_map[Math.floor(+min_note + Math.random() * (max_note - min_note))]; // Decide which note to generate.
-		var tempnote = noteinfo.substring(3, 5); 
-		if (noteinfo.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) { // Make notes sharp.
-			tempnote = noteinfo.substring(3, 4) + "#" + noteinfo.substring(4, 5);
-			$("#sharp" + notenum).fadeIn(0);
+	$("[id^='note']").each(function (note_num) {
+		var note_info = note_map[Math.floor(+min_note + Math.random() * (max_note - min_note))]; // Decide which note to generate.
+		var temp_note = note_info.substring(3, 5); 
+		if (note_info.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) { // Make notes sharp.
+			temp_note = note_info.substring(3, 4) + "#" + note_info.substring(4, 5);
+			$("#sharp" + note_num).fadeIn(0);
 		}
-		staff_notes[notenum] = tempnote;
-		this.style.top = parseInt(noteinfo.substring(0, 3), 10) + "px";
-		document.getElementById("sharp" + notenum).style.top = parseInt(noteinfo.substring(0, 3), 10) - 12 + "px";
-		this.src = noteinfo.length === 6 ? "notewithline.png" : "note.png";
+		staff_notes[note_num] = temp_note;
+		this.style.top = parseInt(note_info.substring(0, 3), 10) + "px";
+		document.getElementById("sharp" + note_num).style.top = parseInt(note_info.substring(0, 3), 10) - 12 + "px";
+		this.src = note_info.length === 6 ? "notewithline.png" : "note.png";
 	});
 	current_note = staff_notes[0];
 }
 
-function continuepractice() {
-	if (notes_played === 7) { startpractice(); }
+function continue_practice() {
+	if (notes_played === 7) { start_practice(); }
 	else {
 		$("[id $=" + notes_played + "]").fadeOut(500);
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
@@ -135,11 +135,11 @@ function continuepractice() {
 	}
 }
 
-async function updatenoterange() {
+async function update_note_range() {
 	await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds.
 	min_note = $("#minnote").val();
 	max_note = $("#maxnote").val();
-	if (+min_note > +max_note) { $("#maxnote").val(+min_note + 1); updatenoterange(); }
+	if (+min_note > +max_note) { $("#maxnote").val(+min_note + 1); update_note_range(); }
 	document.getElementById("minnotedisplay").textContent = "Lowest note: " + note_map[min_note].substring(3, 5);
 	document.getElementById("maxnotedisplay").textContent = "Highest note: E2";
 	document.getElementById("maxnotedisplay").textContent = "Highest note: " + note_map[max_note - 1].substring(3, 5);
