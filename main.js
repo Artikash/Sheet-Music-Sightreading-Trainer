@@ -47,17 +47,13 @@ function initialize() {
 function use_stream(stream) {
 	var audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
-	window.source = microphone; // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=934512
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor);
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
-	// Need to leak this function into the global namespace so it doesn't get
-	// prematurely garbage-collected.
-	// http://lists.w3.org/Archives/Public/public-audio/2013JanMar/0304.html
-	window.capture_audio = function (event) {
+	script_processor.onaudioprocess = function (event) {
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
 		// Stop recording after sample_length_milliseconds.
@@ -73,7 +69,6 @@ function use_stream(stream) {
 			setTimeout(function () { recording = true; }, 250);
 		}
 	};
-	script_processor.onaudioprocess = window.capture_audio;
 }
 
 function interpret_correlation_result(event) {
