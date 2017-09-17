@@ -2,9 +2,6 @@ var C2 = 65.41; // C2 note, in Hz.
 var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5", "6", "7"];
 var test_frequencies = [];
-var recording = true;
-var buffer = [];
-var sample_length_milliseconds = 50;
 var note_map =
 	["222E2L","214F2","206G2","198A2","190B2","182C3","174D3","166E3","158F3","150G3","143A3","135B3","127C4L"
 	,"111C4L","103D4","095E4","087F4","080G4","072A4","064B4","056C5","048D5","040E5","032F5","024G5","016A5L"];
@@ -60,24 +57,25 @@ function use_stream(stream) {
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor);
-	script_processor.onaudioprocess = process_audio;
-}
-
-function process_audio(event) {
-	if (!recording) return;
-	buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
-	// Stop recording after sample_length_milliseconds.
-	if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
-		recording = false;
-		correlation_worker.postMessage(
-			{
-				"timeseries": buffer,
-				"test_frequencies": test_frequencies,
-				"sample_rate": audio_context.sampleRate
-			});
-		buffer = [];
-		setTimeout(function () { recording = true; }, 250);
-	}
+	var buffer = [];
+	var sample_length_milliseconds = 50;
+	var recording = true;
+	script_processor.onaudioprocess = function (event) {
+		if (!recording) return;
+		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
+		// Stop recording after sample_length_milliseconds.
+		if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
+			recording = false;
+			correlation_worker.postMessage(
+				{
+					"timeseries": buffer,
+					"test_frequencies": test_frequencies,
+					"sample_rate": audio_context.sampleRate
+				});
+			buffer = [];
+			setTimeout(function () { recording = true; }, 250);
+		}
+	};
 }
 
 function interpret_correlation_result(event) {
