@@ -2,6 +2,9 @@ var C2 = 65.41; // C2 note, in Hz.
 var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5", "6", "7"];
 var test_frequencies = [];
+var recording = true;
+var buffer = [];
+var sample_length_milliseconds = 50;
 var note_map =
 	["222E2L","214F2","206G2","198A2","190B2","182C3","174D3","166E3","158F3","150G3","143A3","135B3","127C4L"
 	,"111C4L","103D4","095E4","087F4","080G4","072A4","064B4","056C5","048D5","040E5","032F5","024G5","016A5L"];
@@ -19,6 +22,7 @@ var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
+var ios = false;
 for (var i = 0; i < 72; i++) {
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
@@ -31,7 +35,10 @@ var correlation_worker = new Worker("correlation_worker.js");
 correlation_worker.addEventListener("message", interpret_correlation_result);
 document.getElementById("minnote").addEventListener("mouseup", update_note_range);
 document.getElementById("maxnote").addEventListener("mouseup", update_note_range);
-document.getElementById("resume").addEventListener("click", function ios() { audio_context.resume(); }); // starts paused on iOS
+document.getElementById("resume").addEventListener("click", function iosfixer() {
+	audio_context.resume(); // audio_context starts paused on iOS
+	ios = true; // in case I need to design around iOS in the future
+}); 
 document.getElementById("barcheckbox").addEventListener("click", function toggle_bpm_field() {
 	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
 	else { $("[id^='bpm']").fadeOut(0); }
@@ -53,25 +60,24 @@ function use_stream(stream) {
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor);
-	var buffer = [];
-	var sample_length_milliseconds = 50;
-	var recording = true;
-	script_processor.onaudioprocess = function (event) {
-		if (!recording) return;
-		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
-		// Stop recording after sample_length_milliseconds.
-		if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
-			recording = false;
-			correlation_worker.postMessage(
-				{
-					"timeseries": buffer,
-					"test_frequencies": test_frequencies,
-					"sample_rate": audio_context.sampleRate
-				});
-			buffer = [];
-			setTimeout(function () { recording = true; }, 250);
-		}
-	};
+	script_processor.onaudioprocess = process_audio;
+}
+
+function process_audio(event) {
+	if (!recording) return;
+	buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
+	// Stop recording after sample_length_milliseconds.
+	if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
+		recording = false;
+		correlation_worker.postMessage(
+			{
+				"timeseries": buffer,
+				"test_frequencies": test_frequencies,
+				"sample_rate": audio_context.sampleRate
+			});
+		buffer = [];
+		setTimeout(function () { recording = true; }, 250);
+	}
 }
 
 function interpret_correlation_result(event) {
@@ -110,6 +116,7 @@ function interpret_correlation_result(event) {
 		var a = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
+		if (ios) { $("#loading").text("expected" + current_note + "actual" + dominant_frequency.name); }
 		if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
 	}
 }
