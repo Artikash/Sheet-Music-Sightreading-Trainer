@@ -17,6 +17,8 @@ var max_note = 26;
 var bar = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
 var notes_passed = 0;
 var bar_duration = 30000;
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var audio_context = null;
 for (var i = 0; i < 72; i++) {
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
@@ -29,6 +31,7 @@ var correlation_worker = new Worker("correlation_worker.js");
 correlation_worker.addEventListener("message", interpret_correlation_result);
 document.getElementById("minnote").addEventListener("mouseup", update_note_range);
 document.getElementById("maxnote").addEventListener("mouseup", update_note_range);
+document.getElementById("resume").addEventListener("click", function ios() { audio_context.resume(); }); // starts paused on iOS
 document.getElementById("barcheckbox").addEventListener("click", function toggle_bpm_field() {
 	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
 	else { $("[id^='bpm']").fadeOut(0); }
@@ -45,10 +48,9 @@ function initialize() {
 }
 
 function use_stream(stream) {
-	var AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
-	var script_processor = audio_context.createScriptProcessor(1024, 1, 0);
+	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor);
 	var buffer = [];
