@@ -30,8 +30,8 @@ for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and no
 window.addEventListener("load", initialize);
 var correlation_worker = new Worker("correlation_worker.js");
 correlation_worker.addEventListener("message", interpret_correlation_result);
-document.getElementById("minnote").addEventListener("mouseup", update_note_range);
-document.getElementById("maxnote").addEventListener("mouseup", update_note_range);
+document.getElementById("minnote").addEventListener("change", update_note_range);
+document.getElementById("maxnote").addEventListener("change", update_note_range);
 document.getElementById("resume").addEventListener("click", function iosfixer() {
 	audio_context.resume(); // audio_context starts paused on iOS
 	ios = true; // in case I need to design around iOS in the future
