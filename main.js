@@ -60,7 +60,8 @@ function use_stream(stream) {
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
-	script_processor.onaudioprocess = function (event) {
+	// Need this in global namespace so it doesn't get garbage-collected
+	window.process_audio = function (event) {
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
 		// Stop recording after sample_length_milliseconds.
@@ -76,6 +77,7 @@ function use_stream(stream) {
 			setTimeout(function () { recording = true; }, 250);
 		}
 	};
+	script_processor.onaudioprocess = window.process_audio;
 }
 
 function interpret_correlation_result(event) {
