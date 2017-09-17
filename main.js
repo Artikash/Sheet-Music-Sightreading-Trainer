@@ -45,9 +45,10 @@ function initialize() {
 }
 
 function use_stream(stream) {
+	var AudioContext = window.AudioContext || window.webkitAudioContext;
 	var audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
-	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
+	var script_processor = audio_context.createScriptProcessor(1024, 1, 0);
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor);
 	var buffer = [];
