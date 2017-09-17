@@ -48,7 +48,7 @@ function initialize() {
 }
 
 function use_stream(stream) {
-	var audio_context = new AudioContext();
+	audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
