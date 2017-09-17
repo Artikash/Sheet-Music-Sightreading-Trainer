@@ -20,7 +20,7 @@ var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
 var ios = false;
-for (var i = 0; i < 72; i++) {
+for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and notes
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
 	var note = { "frequency": note_frequency, "name": note_name };
@@ -47,7 +47,7 @@ function initialize() {
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
 	get_user_media.call(navigator, { "audio": true }, use_stream, function () { $("#loading").text("Error: Microphone Unavailable"); });
 	if (!$("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeOut(0); }
-	update_note_range();
+	update_note_range(); //accounts for autocomplete
 	use_bar();
 }
 
@@ -56,7 +56,7 @@ function use_stream(stream) {
 	var microphone = audio_context.createMediaStreamSource(stream);
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
-	microphone.connect(script_processor);
+	microphone.connect(script_processor); // four lines set up microphone
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
@@ -114,7 +114,6 @@ function interpret_correlation_result(event) {
 		var a = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
-		if (ios) { $("#loading").text("expected" + current_note + "actual" + dominant_frequency.name); }
 		if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
 	}
 }
@@ -138,12 +137,12 @@ function start_practice() {
 		staff_notes[note_num] = temp_note;
 		this.style.top = parseInt(note_info.substring(0, 3), 10) + "px";
 		$("#sharp" + note_num).css("top", parseInt(note_info.substring(0, 3)) - 12 + "px");
-		this.src = note_info.length === 6 ? "notewithline.png" : "note.png";
+		this.src = note_info.length === 6 ? "notewithline.png" : "note.png"; //length is only 6 when there is an L in note_info
 	});
 	current_note = staff_notes[0];
 }
 
-function continue_practice(success) {
+function continue_practice(success) { //success = true when note is played, false when bar passes over note without being played
 	if (notes_played === 7 && !bar) { start_practice(); }
 	else {
 		if (success && (!bar || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
@@ -170,6 +169,6 @@ async function update_note_range() {
 	max_note = $("#maxnote").val();
 	if (+min_note > +max_note) { $("#maxnote").val(+min_note + 1); update_note_range(); }
 	$("#minnotedisplay").text("Lowest note: " + note_map[min_note].substring(3, 5));
-	$("#maxnotedisplay").text("Highest note: E2");
+	$("#maxnotedisplay").text("Highest note: E2"); // displayed if max_note === 0
 	$("#maxnotedisplay").text("Highest note: " + note_map[max_note - 1].substring(3, 5));
 }
