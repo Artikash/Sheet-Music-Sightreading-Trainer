@@ -139,7 +139,7 @@ function start_practice() {
 		staff_notes[note_num] = temp_note;
 		this.style.top = parseInt(note_info.substring(0, 3), 10) + "px";
 		$("#sharp" + note_num).css("top", parseInt(note_info.substring(0, 3)) - 12 + "px");
-		this.src = note_info.length === 6 ? "notewithline.png" : "note.png"; //length is only 6 when there is an L in note_info
+		this.src = note_info.length === 6 ? "Images\\notewithline.png" : "Images\\note.png"; //length is only 6 when there is an L in note_info
 	});
 	current_note = staff_notes[0];
 }
@@ -149,7 +149,7 @@ function continue_practice(success) { //success = true when note is played, fals
 	else {
 		if (success && (!bar || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
 		else if (success) { return; } // Occurs when user plays faster than bar.
-		else { $("[id $=note" + notes_played + "]").prop("src", "rednote.png"); }
+		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
 		current_note = staff_notes[notes_played]; 
 	}
