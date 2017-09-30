@@ -19,6 +19,7 @@ var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
+var audio_stream = null;
 var ios = false;
 for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and notes
 	var note_frequency = C2 * Math.pow(2, i / 12);
@@ -33,8 +34,10 @@ correlation_worker.addEventListener("message", interpret_correlation_result);
 document.getElementById("minnote").addEventListener("change", update_note_range);
 document.getElementById("maxnote").addEventListener("change", update_note_range);
 document.getElementById("resume").addEventListener("click", function iosfixer() {
+	if (!AudioContext == window.webkitAudioContext) { return; }
 	audio_context.resume(); // audio_context starts paused on iOS
 	ios = true; // in case I need to design around iOS in the future
+	use_stream(audio_stream); //this function sporadically stops working on iOS
 }); 
 document.getElementById("barcheckbox").addEventListener("click", function toggle_bpm_field() {
 	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
@@ -52,6 +55,7 @@ function initialize() {
 }
 
 function use_stream(stream) {
+	audio_stream = stream;
 	audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
