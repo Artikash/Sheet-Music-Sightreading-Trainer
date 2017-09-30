@@ -21,6 +21,7 @@ var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
 var audio_stream = null;
 var ios = false;
+var script_processor_active = true;
 for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and notes
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
@@ -34,10 +35,11 @@ correlation_worker.addEventListener("message", interpret_correlation_result);
 document.getElementById("minnote").addEventListener("change", update_note_range);
 document.getElementById("maxnote").addEventListener("change", update_note_range);
 document.getElementById("resume").addEventListener("click", function iosfixer() {
-	if (!AudioContext == window.webkitAudioContext) { return; }
+	if (!AudioContext === window.webkitAudioContext) { return; }
 	audio_context.resume(); // audio_context starts paused on iOS
 	ios = true; // in case I need to design around iOS in the future
-	use_stream(audio_stream); //this function sporadically stops working on iOS
+	if (script_processor_active) { return; }
+	use_stream(audio_stream); //script_processor inside this function sporadically stops working on iOS
 }); 
 document.getElementById("barcheckbox").addEventListener("click", function toggle_bpm_field() {
 	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
@@ -66,6 +68,7 @@ function use_stream(stream) {
 	var recording = true;
 	// Need this in global namespace so it doesn't get garbage-collected
 	window.process_audio = function (event) {
+		script_processor_active = true;
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
 		// Stop recording after sample_length_milliseconds.
@@ -108,6 +111,7 @@ function interpret_correlation_result(event) {
 	if (whitenoise_measurements === 5) { // Once enough data on whitenoise is gathered, generate sheet music and start listening.
 		$("#loading").text("");
 		whitenoise_measurements++;
+		declare_script_processor_inactive(); // This needs to be called exactly once, after use_stream has run. So it's here.
 		start_practice();
 	}
 	// Compute the average magnitude. We'll only pay attention to frequencies
@@ -177,4 +181,8 @@ async function update_note_range() {
 	$("#minnotedisplay").text("Lowest note: " + note_map[min_note].substring(3, 5));
 	$("#maxnotedisplay").text("Highest note: E2"); // displayed if max_note === 0
 	$("#maxnotedisplay").text("Highest note: " + note_map[max_note - 1].substring(3, 5));
+}
+
+async function declare_script_processor_inactive() {
+	while (true) { await new Promise(resolve => setTimeout(resolve, 5000)); script_processor_active = false; }
 }
