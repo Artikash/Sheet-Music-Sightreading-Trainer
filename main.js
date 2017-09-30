@@ -19,9 +19,7 @@ var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
-var audio_stream = null;
 var ios = false;
-var script_processor_active = true;
 for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and notes
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12] + octaves[Math.floor(i / 12)];
@@ -35,11 +33,8 @@ correlation_worker.addEventListener("message", interpret_correlation_result);
 document.getElementById("minnote").addEventListener("change", update_note_range);
 document.getElementById("maxnote").addEventListener("change", update_note_range);
 document.getElementById("resume").addEventListener("click", function iosfixer() {
-	if (!AudioContext === window.webkitAudioContext) { return; }
 	audio_context.resume(); // audio_context starts paused on iOS
 	ios = true; // in case I need to design around iOS in the future
-	if (script_processor_active) { return; }
-	use_stream(audio_stream); //script_processor inside this function sporadically stops working on iOS
 }); 
 document.getElementById("barcheckbox").addEventListener("click", function toggle_bpm_field() {
 	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
@@ -57,7 +52,6 @@ function initialize() {
 }
 
 function use_stream(stream) {
-	audio_stream = stream;
 	audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
 	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
@@ -68,7 +62,6 @@ function use_stream(stream) {
 	var recording = true;
 	// Need this in global namespace so it doesn't get garbage-collected
 	window.process_audio = function (event) {
-		script_processor_active = true;
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
 		// Stop recording after sample_length_milliseconds.
@@ -111,7 +104,6 @@ function interpret_correlation_result(event) {
 	if (whitenoise_measurements === 5) { // Once enough data on whitenoise is gathered, generate sheet music and start listening.
 		$("#loading").text("");
 		whitenoise_measurements++;
-		declare_script_processor_inactive(); // This needs to be called exactly once, after use_stream has run. So it's here.
 		start_practice();
 	}
 	// Compute the average magnitude. We'll only pay attention to frequencies
@@ -147,7 +139,7 @@ function start_practice() {
 		staff_notes[note_num] = temp_note;
 		this.style.top = parseInt(note_info.substring(0, 3), 10) + "px";
 		$("#sharp" + note_num).css("top", parseInt(note_info.substring(0, 3)) - 12 + "px");
-		this.src = note_info.length === 6 ? "Images\\notewithline.png" : "Images\\note.png"; //length is only 6 when there is an L in note_info
+		this.src = note_info.length === 6 ? "notewithline.png" : "note.png"; //length is only 6 when there is an L in note_info
 	});
 	current_note = staff_notes[0];
 }
@@ -157,7 +149,7 @@ function continue_practice(success) { //success = true when note is played, fals
 	else {
 		if (success && (!bar || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
 		else if (success) { return; } // Occurs when user plays faster than bar.
-		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
+		else { $("[id $=note" + notes_played + "]").prop("src", "rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
 		current_note = staff_notes[notes_played]; 
 	}
@@ -181,8 +173,4 @@ async function update_note_range() {
 	$("#minnotedisplay").text("Lowest note: " + note_map[min_note].substring(3, 5));
 	$("#maxnotedisplay").text("Highest note: E2"); // displayed if max_note === 0
 	$("#maxnotedisplay").text("Highest note: " + note_map[max_note - 1].substring(3, 5));
-}
-
-async function declare_script_processor_inactive() {
-	while (true) { await new Promise(resolve => setTimeout(resolve, 5000)); script_processor_active = false; }
 }
