@@ -47,7 +47,7 @@ function use_stream(stream) {
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
-	// Need this as well as the script processor node in global namespace so they don't get garbage-collected
+	// Need this function as well as the script processor node in global namespace so they don't get garbage-collected
 	window.process_audio = function (event) {
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
