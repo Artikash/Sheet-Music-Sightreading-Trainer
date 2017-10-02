@@ -19,6 +19,7 @@ var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
+var script_processor = null;
 var ios = false;
 for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and notes
 	var note_frequency = C2 * Math.pow(2, i / 12);
@@ -27,52 +28,33 @@ for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and no
 	test_frequencies = test_frequencies.concat([note]);
 }
 
-window.addEventListener("load", initialize);
-var correlation_worker = new Worker("correlation_worker.js");
-correlation_worker.addEventListener("message", interpret_correlation_result);
-document.getElementById("minnote").addEventListener("change", update_note_range);
-document.getElementById("maxnote").addEventListener("change", update_note_range);
-document.getElementById("resume").addEventListener("click", function iosfixer() {
-	audio_context.resume(); // audio_context starts paused on iOS
-	ios = true; // in case I need to design around iOS in the future
-}); 
-document.getElementById("barcheckbox").addEventListener("click", function toggle_bpm_field() {
-	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
-	else { $("[id^='bpm']").fadeOut(0); }
-});
-
-function initialize() {
+$(window).on("load", function initialize() {
 	var get_user_media = navigator.getUserMedia;
 	get_user_media = get_user_media || navigator.webkitGetUserMedia;
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
 	get_user_media.call(navigator, { "audio": true }, use_stream, function () { $("#loading").text("Error: Microphone Unavailable"); });
 	if (!$("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeOut(0); }
-	update_note_range(); //accounts for autocomplete
+	update_note_range(); // Because autocomplete exists
 	use_bar();
-}
+});
 
 function use_stream(stream) {
 	audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
-	var script_processor = audio_context.createScriptProcessor(1024, 1, 1);
+	script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
-	microphone.connect(script_processor); // four lines set up microphone
+	microphone.connect(script_processor); // These four lines set up microphone
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
-	// Need this in global namespace so it doesn't get garbage-collected
+	// Need this as well as the script processor node in global namespace so they don't get garbage-collected
 	window.process_audio = function (event) {
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
 		// Stop recording after sample_length_milliseconds.
 		if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
 			recording = false;
-			correlation_worker.postMessage(
-				{
-					"timeseries": buffer,
-					"test_frequencies": test_frequencies,
-					"sample_rate": audio_context.sampleRate
-				});
+			compute_correlations(buffer, audio_context.sampleRate);
 			buffer = [];
 			setTimeout(function () { recording = true; }, 250);
 		}
@@ -80,11 +62,30 @@ function use_stream(stream) {
 	script_processor.onaudioprocess = window.process_audio;
 }
 
-function interpret_correlation_result(event) {
-	var timeseries = event.data.timeseries;
-	var frequency_amplitudes = event.data.frequency_amplitudes;
-	// Compute the (squared) magnitudes of the complex amplitudes for each
-	// test frequency.
+$("#resume").on("click", function iosfixer() {
+	audio_context.resume(); // audio_context starts paused on iOS
+	ios = true; // In case I need to design around iOS in the future
+});
+
+function compute_correlations(timeseries, sample_rate) {
+	// 2pi * frequency gives the appropriate period to sine.
+	// timeseries index / sample_rate gives the appropriate time coordinate.
+	var scale_factor = 2 * Math.PI / sample_rate;
+	var amplitudes = test_frequencies.map(function (f) {
+		var frequency = f.frequency;
+		// Represent a complex number as a length-2 array [ real, imaginary ].
+		var accumulator = [0, 0];
+		for (var t = 0; t < timeseries.length; t++) {
+			accumulator[0] += timeseries[t] * Math.cos(scale_factor * frequency * t);
+			accumulator[1] += timeseries[t] * Math.sin(scale_factor * frequency * t);
+		}
+		return accumulator;
+	});
+	interpret_correlation_result(timeseries, amplitudes);
+}
+
+function interpret_correlation_result(timeseries, frequency_amplitudes) {
+	// Compute the (squared) magnitudes of the complex amplitudes for each test frequency.
 	var magnitudes = frequency_amplitudes.map(function (z) {
 		return z[0] * z[0] + z[1] * z[1];
 	});
@@ -96,7 +97,7 @@ function interpret_correlation_result(event) {
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
 	}
-	if (whitenoise_measurements < 5) { // The white noisemeasurements make sure that white noise doesn't register as a note.
+	if (whitenoise_measurements < 5) { // The white noise measurements make sure that white noise doesn't register as a note.
 		$("#loading").text("Calibrating microphone:" + (whitenoise_measurements + 1) * 100 / 5 + "%"); 
 		whitenoise_measurements++;
 		if (max_whitenoise < maximum_magnitude) { max_whitenoise = maximum_magnitude; }
@@ -116,7 +117,10 @@ function interpret_correlation_result(event) {
 		var a = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
-		if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
+		try {
+			if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
+		}
+		finally { return; }
 	}
 }
 
@@ -139,12 +143,12 @@ function start_practice() {
 		staff_notes[note_num] = temp_note;
 		this.style.top = parseInt(note_info.substring(0, 3), 10) + "px";
 		$("#sharp" + note_num).css("top", parseInt(note_info.substring(0, 3)) - 12 + "px");
-		this.src = note_info.length === 6 ? "Images\\notewithline.png" : "Images\\note.png"; //length is only 6 when there is an L in note_info
+		this.src = note_info.length === 6 ? "Images\\notewithline.png" : "Images\\note.png"; // length = 6 iff L is in note_info
 	});
 	current_note = staff_notes[0];
 }
 
-function continue_practice(success) { //success = true when note is played, false when bar passes over note without being played
+function continue_practice(success) { // success = true when note is played, false when bar passes over note without being played
 	if (notes_played === 7 && !bar) { start_practice(); }
 	else {
 		if (success && (!bar || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
@@ -165,12 +169,18 @@ async function use_bar() {
 	}
 }
 
+$("[id$='note']").on("change", update_note_range);
 async function update_note_range() {
 	await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds.
 	min_note = $("#minnote").val();
 	max_note = $("#maxnote").val();
 	if (+min_note > +max_note) { $("#maxnote").val(+min_note + 1); update_note_range(); }
 	$("#minnotedisplay").text("Lowest note: " + note_map[min_note].substring(3, 5));
-	$("#maxnotedisplay").text("Highest note: E2"); // displayed if max_note === 0
+	$("#maxnotedisplay").text("Highest note: E2"); // Displayed if max_note = 0
 	$("#maxnotedisplay").text("Highest note: " + note_map[max_note - 1].substring(3, 5));
 }
+
+$("#barcheckbox").on("click", function toggle_bpm_field() {
+	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
+	else { $("[id^='bpm']").fadeOut(0); }
+});
