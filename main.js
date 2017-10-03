@@ -14,7 +14,7 @@ var notes_played = 0;
 var staff_notes = ["", "", "", "", "", "", "", ""];
 var min_note = 0;
 var max_note = 26;
-var bar = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
+var bar_enabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
 var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -32,13 +32,13 @@ $(window).on("load", function initialize() {
 	var get_user_media = navigator.getUserMedia;
 	get_user_media = get_user_media || navigator.webkitGetUserMedia;
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
-	get_user_media.call(navigator, { "audio": true }, use_stream, function () { $("#loading").text("Error: Microphone Unavailable"); });
+	get_user_media.call(navigator, { "audio": true }, use_audio_stream, function () { $("#loading").text("Error: No Microphone"); });
 	if (!$("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeOut(0); }
 	update_note_range(); // Because autocomplete exists
 	use_bar();
 });
 
-function use_stream(stream) {
+function use_audio_stream(stream) {
 	audio_context = new AudioContext();
 	var microphone = audio_context.createMediaStreamSource(stream);
 	script_processor = audio_context.createScriptProcessor(1024, 1, 1);
@@ -54,7 +54,7 @@ function use_stream(stream) {
 		// Stop recording after sample_length_milliseconds.
 		if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
 			recording = false;
-			compute_correlations(buffer, audio_context.sampleRate);
+			interpret_audio_stream(buffer, audio_context.sampleRate);
 			buffer = [];
 			setTimeout(function () { recording = true; }, 250);
 		}
@@ -67,11 +67,11 @@ $("#resume").on("click", function iosfixer() {
 	ios = true; // In case I need to design around iOS in the future
 });
 
-function compute_correlations(timeseries, sample_rate) {
+function interpret_audio_stream(timeseries, sample_rate) {
 	// 2pi * frequency gives the appropriate period to sine.
 	// timeseries index / sample_rate gives the appropriate time coordinate.
 	var scale_factor = 2 * Math.PI / sample_rate;
-	var amplitudes = test_frequencies.map(function (f) {
+	var frequency_amplitudes = test_frequencies.map(function (f) {
 		var frequency = f.frequency;
 		// Represent a complex number as a length-2 array [ real, imaginary ].
 		var accumulator = [0, 0];
@@ -81,10 +81,6 @@ function compute_correlations(timeseries, sample_rate) {
 		}
 		return accumulator;
 	});
-	interpret_correlation_result(timeseries, amplitudes);
-}
-
-function interpret_correlation_result(timeseries, frequency_amplitudes) {
 	// Compute the (squared) magnitudes of the complex amplitudes for each test frequency.
 	var magnitudes = frequency_amplitudes.map(function (z) {
 		return z[0] * z[0] + z[1] * z[1];
@@ -114,23 +110,26 @@ function interpret_correlation_result(timeseries, frequency_amplitudes) {
 	var confidence_threshold = 15; // empirical, arbitrary.
 	if (confidence > confidence_threshold && maximum_magnitude > max_whitenoise * 3) {
 		var dominant_frequency = test_frequencies[maximum_index];
-		var a = test_frequencies[maximum_index + 12]; //The algorithm can be off by 1 octave, so need these as workarounds.
+		var a = test_frequencies[maximum_index + 12]; // The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
 		try {
-			if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) { continue_practice(true); }
+			if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) {
+				$("#loading").text("Successfully played " + current_note);
+				continue_practice(true);
+			}
 		}
 		finally { return; }
 	}
 }
 
 function start_practice() {
-	bar = $("#barcheckbox").prop("checked");
-	bar_duration = 540000 / $("#bpm").val(); // Conversion of user input to animation speed.
+	bar_enabled = $("#barcheckbox").prop("checked");
+	if (parseInt($("#bpm").val())) { bar_duration = 540000 / $("#bpm").val(); } // Conversion of user input to animation speed.
 	notes_passed = 0;
 	notes_played = 0;
 	$("#bar").css("left", "100px");
-	if (bar) { $("#bar").animate({ left: "550px" }, bar_duration, "linear", start_practice); }
+	if (bar_enabled) { $("#bar").animate({ left: "550px" }, bar_duration, "linear", start_practice); }
 	$("[id^='note']").fadeIn(0);
 	$("[id^='sharp']").fadeOut(0);
 	$("[id^='note']").each(function (note_num) {
@@ -149,9 +148,9 @@ function start_practice() {
 }
 
 function continue_practice(success) { // success = true when note is played, false when bar passes over note without being played
-	if (notes_played === 7 && !bar) { start_practice(); }
+	if (notes_played === 7 && !bar_enabled) { start_practice(); }
 	else {
-		if (success && (!bar || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
+		if (success && (!bar_enabled || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
 		else if (success) { return; } // Occurs when user plays faster than bar.
 		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
