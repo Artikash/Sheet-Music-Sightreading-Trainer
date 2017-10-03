@@ -17,7 +17,6 @@ var min_note = 0;
 var max_note = 26;
 var bar_enabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
 var bar_position = 100;
-var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
