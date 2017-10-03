@@ -150,11 +150,17 @@ function start_practice() {
 }
 
 function continue_practice(success) { // success = true when note is played, false when bar passes over note without being played
-	if (notes_played === 7 && !bar_enabled) { start_practice(); }
+	if (notes_played === 7 && !bar_enabled) {
+		start_practice();
+	}
 	else {
 		if (success && (!bar_enabled || Math.abs(bar_position - current_note_position) < 25)) {
 			$("[id $=" + notes_played + "]").fadeOut(500);
 			$("#loading").text("Successfully played " + current_note);
+			if (current_note === staff_notes[notes_played + 1]) { // Temp workaround for autofail when same notes generated
+				notes_played++;
+				$("[id $=" + notes_played + "]").fadeOut(500);
+			}
 		}
 		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
