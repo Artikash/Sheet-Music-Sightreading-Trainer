@@ -8,6 +8,7 @@ var note_map =
 // The above encodes note info like so: first 3 digits represent y coord, letter represents note name
 // next digit represents octave, L is added at the end if a ledger line is needed.
 var current_note = "";
+var current_note_position = 175;
 var max_whitenoise = 0;
 var whitenoise_measurements = 0;
 var notes_played = 0;
@@ -15,6 +16,7 @@ var staff_notes = ["", "", "", "", "", "", "", ""];
 var min_note = 0;
 var max_note = 26;
 var bar_enabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
+var bar_position = 100;
 var notes_passed = 0;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -39,11 +41,11 @@ $(window).on("load", function initialize() {
 });
 
 function use_audio_stream(stream) {
-	audio_context = new AudioContext();
+	audio_context = new AudioContext(); // These four lines set up microphone
 	var microphone = audio_context.createMediaStreamSource(stream);
 	script_processor = audio_context.createScriptProcessor(1024, 1, 1);
 	script_processor.connect(audio_context.destination);
-	microphone.connect(script_processor); // These four lines set up microphone
+	microphone.connect(script_processor); 
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
@@ -113,9 +115,8 @@ function interpret_audio_stream(timeseries, sample_rate) {
 		var a = test_frequencies[maximum_index + 12]; // The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
-		try {
+		try { //b.name can sometimes not exist and throw an error, so try block is used
 			if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) {
-				$("#loading").text("Successfully played " + current_note);
 				continue_practice(true);
 			}
 		}
@@ -125,9 +126,10 @@ function interpret_audio_stream(timeseries, sample_rate) {
 
 function start_practice() {
 	bar_enabled = $("#barcheckbox").prop("checked");
-	if (parseInt($("#bpm").val())) { bar_duration = 540000 / $("#bpm").val(); } // Conversion of user input to animation speed.
+	if (parseFloat($("#bpm").val())) { bar_duration = 540000 / $("#bpm").val(); } // Conversion of user input to animation speed.
 	notes_passed = 0;
 	notes_played = 0;
+	current_note_position = 175;
 	$("#bar").css("left", "100px");
 	if (bar_enabled) { $("#bar").animate({ left: "550px" }, bar_duration, "linear", start_practice); }
 	$("[id^='note']").fadeIn(0);
@@ -150,21 +152,22 @@ function start_practice() {
 function continue_practice(success) { // success = true when note is played, false when bar passes over note without being played
 	if (notes_played === 7 && !bar_enabled) { start_practice(); }
 	else {
-		if (success && (!bar_enabled || notes_played < notes_passed + 1)) { $("[id $=" + notes_played + "]").fadeOut(500); }
-		else if (success) { return; } // Occurs when user plays faster than bar.
+		if (success && (!bar_enabled || Math.abs(bar_position - current_note_position) < 25)) {
+			$("[id $=" + notes_played + "]").fadeOut(500);
+			$("#loading").text("Successfully played " + current_note);
+		}
 		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
-		current_note = staff_notes[notes_played]; 
+		current_note = staff_notes[notes_played];
+		current_note_position = parseInt($("[id $=note" + notes_played + "]").css("left").substring(0, 3));
 	}
 }
 
 async function use_bar() {
 	while (true) {
-		await new Promise(resolve => setTimeout(resolve, 10));
-		if (parseInt($("#bar").css("left").substring(0, 3)) > 170 + notes_passed * 50) {
-			notes_passed++;
-			if (notes_passed > notes_played) { continue_practice(false); }
-		}
+		await new Promise(resolve => setTimeout(resolve, 1));
+		bar_position = parseInt($("#bar").css("left").substring(0, 3));
+		if (bar_position > current_note_position + 25) { continue_practice(false); }
 	}
 }
 
@@ -175,7 +178,7 @@ async function update_note_range() {
 	max_note = $("#maxnote").val();
 	if (+min_note > +max_note) { $("#maxnote").val(+min_note + 1); update_note_range(); }
 	$("#minnotedisplay").text("Lowest note: " + note_map[min_note].substring(3, 5));
-	$("#maxnotedisplay").text("Highest note: E2"); // Displayed if max_note = 0
+	$("#maxnotedisplay").text("Highest note: E2"); // Displayed iff max_note === 0
 	$("#maxnotedisplay").text("Highest note: " + note_map[max_note - 1].substring(3, 5));
 }
 
