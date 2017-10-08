@@ -130,7 +130,7 @@ function start_practice() {
 	notes_played = 0;
 	current_note_position = 175;
 	$("#bar").css("left", "100px");
-	if (bar_enabled) { $("#bar").animate({ left: "550px" }, bar_duration, "linear", start_practice); }
+	if (bar_enabled) { $("#bar").animate({ left: "580px" }, bar_duration, "linear", start_practice); }
 	$("[id^='note']").fadeIn(0);
 	$("[id^='sharp']").fadeOut(0);
 	$("[id^='note']").each(function (note_num) {
@@ -153,7 +153,7 @@ function continue_practice(success) { // success = true when note is played, fal
 		start_practice();
 	}
 	else {
-		if (success && (!bar_enabled || Math.abs(bar_position - current_note_position) < 25)) {
+		if (success && (!bar_enabled || Math.abs(bar_position - current_note_position - 25) < 25)) {
 			$("[id $=" + notes_played + "]").fadeOut(500);
 			$("#loading").text("Successfully played " + current_note);
 		}
