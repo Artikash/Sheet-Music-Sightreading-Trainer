@@ -34,7 +34,7 @@ $(window).on("load", function initialize() {
 	get_user_media = get_user_media || navigator.webkitGetUserMedia;
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
 	get_user_media.call(navigator, { "audio": true }, use_audio_stream, function () { $("#loading").text("Error: No Microphone"); });
-	if (!$("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeOut(0); }
+	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeOut(0); }
 	update_note_range(); // Because autocomplete exists
 	use_bar();
 });
@@ -124,9 +124,8 @@ function interpret_audio_stream(timeseries, sample_rate) {
 }
 
 function start_practice() {
-	bar_enabled = $("#barcheckbox").prop("checked");
+	bar_enabled = !$("#barcheckbox").prop("checked");
 	if (parseFloat($("#bpm").val())) { bar_duration = 540000 / $("#bpm").val(); } // Conversion of user input to animation speed.
-	notes_passed = 0;
 	notes_played = 0;
 	current_note_position = 175;
 	$("#bar").css("left", "100px");
@@ -153,7 +152,8 @@ function continue_practice(success) { // success = true when note is played, fal
 		start_practice();
 	}
 	else {
-		if (success && (!bar_enabled || Math.abs(bar_position - current_note_position - 25) < 25)) {
+		var bar_leniency = 108000 / bar_duration;
+		if (success && (!bar_enabled || Math.abs(bar_position + bar_leniency - current_note_position - 25) < 25)) {
 			$("[id $=" + notes_played + "]").fadeOut(500);
 			$("#loading").text("Successfully played " + current_note);
 		}
@@ -161,7 +161,7 @@ function continue_practice(success) { // success = true when note is played, fal
 		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
 		current_note = staff_notes[notes_played];
-		current_note_position = parseInt($("[id $=note" + notes_played + "]").css("left").substring(0, 3));
+		current_note_position = parseInt($("[id $=note" + Math.min(notes_played, 7) + "]").css("left").substring(0, 3));
 	}
 }
 
@@ -185,6 +185,6 @@ async function update_note_range() {
 }
 
 $("#barcheckbox").on("click", function toggle_bpm_field() {
-	if ($("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
+	if (!$("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
 	else { $("[id^='bpm']").fadeOut(0); }
 });
