@@ -42,25 +42,22 @@ $(window).on("load", function initialize() {
 function use_audio_stream(stream) {
 	audio_context = new AudioContext(); // These four lines set up microphone
 	var microphone = audio_context.createMediaStreamSource(stream);
-	script_processor = audio_context.createScriptProcessor(1024, 1, 1);
+	script_processor = audio_context.createScriptProcessor(1024, 1, 1); // In global namespace so Safari doesn't garbage-collect it
 	script_processor.connect(audio_context.destination);
 	microphone.connect(script_processor); 
 	var buffer = [];
 	var sample_length_milliseconds = 50;
 	var recording = true;
-	// Need this function as well as the script processor node in global namespace so they don't get garbage-collected
-	window.process_audio = function (event) {
+	script_processor.onaudioprocess = function (event) {
 		if (!recording) return;
 		buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
-		// Stop recording after sample_length_milliseconds.
-		if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) {
+		if (buffer.length > sample_length_milliseconds * audio_context.sampleRate / 1000) { // Stop recording after sample_length_milliseconds.
 			recording = false;
 			interpret_audio_stream(buffer, audio_context.sampleRate);
 			buffer = [];
 			setTimeout(function () { recording = true; }, 250);
 		}
 	};
-	script_processor.onaudioprocess = window.process_audio;
 }
 
 $("#resume").on("click", function iosfixer() {
@@ -69,27 +66,22 @@ $("#resume").on("click", function iosfixer() {
 });
 
 function interpret_audio_stream(timeseries, sample_rate) {
-	// 2pi * frequency gives the appropriate period to sine.
-	// timeseries index / sample_rate gives the appropriate time coordinate.
-	var scale_factor = 2 * Math.PI / sample_rate;
+	var scale_factor = 2 * Math.PI / sample_rate; // 2pi * frequency gives the appropriate period to (co)sine.
 	var frequency_amplitudes = test_frequencies.map(function (f) {
 		var frequency = f.frequency;
-		// Represent a complex number as a length-2 array [ real, imaginary ].
-		var accumulator = [0, 0];
+		var accumulator = [0, 0]; // Represent a complex number as a length-2 array [ real, imaginary ].
 		for (var t = 0; t < timeseries.length; t++) {
-			accumulator[0] += timeseries[t] * Math.cos(scale_factor * frequency * t);
+			accumulator[0] += timeseries[t] * Math.cos(scale_factor * frequency * t); // timeseries index / sample_rate gives the appropriate time coordinate.
 			accumulator[1] += timeseries[t] * Math.sin(scale_factor * frequency * t);
 		}
 		return accumulator;
 	});
-	// Compute the (squared) magnitudes of the complex amplitudes for each test frequency.
 	var magnitudes = frequency_amplitudes.map(function (z) {
-		return z[0] * z[0] + z[1] * z[1];
+		return z[0] * z[0] + z[1] * z[1]; // Compute the (squared) magnitudes of the complex amplitudes for each test frequency.
 	});
-	// Find the maximum in the list of magnitudes.
 	var maximum_index = -1;
 	var maximum_magnitude = 0;
-	for (var i = 0; i < magnitudes.length; i++) {
+	for (var i = 0; i < magnitudes.length; i++) { // Find the maximum in the list of magnitudes.
 		if (magnitudes[i] <= maximum_magnitude) continue;
 		maximum_index = i;
 		maximum_magnitude = magnitudes[i];
@@ -104,8 +96,6 @@ function interpret_audio_stream(timeseries, sample_rate) {
 		whitenoise_measurements++;
 		start_practice();
 	}
-	// Compute the average magnitude. We'll only pay attention to frequencies
-	// with magnitudes significantly above average.
 	var average = magnitudes.reduce(function (a, b) { return a + b; }, 0) / magnitudes.length;
 	var confidence = maximum_magnitude / average;
 	var confidence_threshold = 15; // empirical, arbitrary.
