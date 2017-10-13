@@ -15,4 +15,7 @@ $(window).on("load", function initializesongs() {
 	var ode_to_joy_notes = "E4E4F4G4G4F4E4D4C4C4D4E4E4D4D4G3E4E4F4G4G4F4E4D4C4C4D4E4D4C4C4R";
 	window.ode_to_joy_converted = convertNotes(ode_to_joy_notes);
 	window.ode_to_joy_converted.shift();
+	var fur_elise_notes = "E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4G#4B4C5RE4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4B4A4G4";
+	window.fur_elise_converted = convertNotes(fur_elise_notes);
+	window.fur_elise_converted.shift();
 });

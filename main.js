@@ -141,7 +141,7 @@ function start_practice() {
 			} else {
 				var note_info = note_map[desired_notes[0].toString().substring(0, 2)];
 				var temp_note = note_info.substring(3, 5);
-				if (Number.parseInt(desired_notes[0]).isNan) {
+				if (isNaN(desired_notes[0])) {
 					temp_note = note_info.substring(3, 4) + "#" + note_info.substring(4, 5);
 					$("#sharp" + note_num).fadeIn(0);
 				}
@@ -201,6 +201,10 @@ $("#playmusic").on("click", function play_music() {
 	switch ($("#music").val()) {
 		case "Ode to Joy":
 			desired_notes = Object.assign(desired_notes, window.ode_to_joy_converted);
+			start_practice();
+			break;
+		case "Fur Elise":
+			desired_notes = Object.assign(desired_notes, window.fur_elise_converted);
 			start_practice();
 			break;
 		default: return;
