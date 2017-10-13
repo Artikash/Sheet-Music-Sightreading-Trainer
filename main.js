@@ -3,8 +3,8 @@ var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 var octaves = ["2", "3", "4", "5", "6", "7"];
 var test_frequencies = [];
 var note_map =
-	["222E2L","214F2","206G2","198A2","190B2","182C3","174D3","166E3","158F3","150G3","143A3","135B3","127C4L"
-	,"111C4L","103D4","095E4","087F4","080G4","072A4","064B4","056C5","048D5","040E5","032F5","024G5","016A5L"];
+	["222E2L", "214F2", "206G2", "198A2", "190B2", "182C3", "174D3", "166E3", "158F3", "150G3", "143A3", "135B3", "127C4L"
+	,"111C4L", "103D4", "095E4", "087F4", "080G4", "072A4", "064B4", "056C5", "048D5", "040E5", "032F5", "024G5", "016A5L"];
 // The above encodes note info like so: first 3 digits represent y coord, letter represents note name
 // next digit represents octave, L is added at the end if a ledger line is needed.
 var current_note = "";
@@ -13,10 +13,11 @@ var max_whitenoise = 0;
 var whitenoise_measurements = 0;
 var notes_played = 0;
 var staff_notes = ["", "", "", "", "", "", "", ""];
+var desired_notes = [];
 var min_note = 0;
 var max_note = 26;
 var bar_enabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
-var bar_position = 100;
+var bar_position = 160;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
@@ -38,6 +39,14 @@ $(window).on("load", function initialize() {
 	update_note_range(); // Because autocomplete exists
 	use_bar();
 });
+
+async function use_bar() {
+	while (true) {
+		await new Promise(resolve => setTimeout(resolve, 1));
+		bar_position = parseInt($("#bar").css("left").substring(0, 3));
+		if (bar_position > current_note_position + 25) { continue_practice(false); }
+	}
+}
 
 function use_audio_stream(stream) {
 	audio_context = new AudioContext(); // These four lines set up microphone
@@ -104,7 +113,7 @@ function interpret_audio_stream(timeseries, sample_rate) {
 		var a = test_frequencies[maximum_index + 12]; // The algorithm can be off by 1 octave, so need these as workarounds.
 		var b = test_frequencies[maximum_index - 12]; 
 		console.log("expected" + current_note + "actual" + dominant_frequency.name);
-		try { //b.name can sometimes not exist and throw an error, so try block is used
+		try { // b.name can sometimes not exist and throw an error, so try block is used
 			if (dominant_frequency.name === current_note || a.name === current_note || b.name === current_note) {
 				continue_practice(true);
 			}
@@ -113,21 +122,38 @@ function interpret_audio_stream(timeseries, sample_rate) {
 	}
 }
 
-function start_practice() {
+function start_practice() { 
 	bar_enabled = !$("#barcheckbox").prop("checked");
 	if (parseFloat($("#bpm").val())) { bar_duration = 540000 / $("#bpm").val(); } // Conversion of user input to animation speed.
 	notes_played = 0;
 	current_note_position = 175;
-	$("#bar").css("left", "100px");
-	if (bar_enabled) { $("#bar").animate({ left: "580px" }, bar_duration, "linear", start_practice); }
+	$("#bar").stop();
+	$("#bar").css("left", "160px");
+	if (bar_enabled) { $("#bar").animate({ left: "560px" }, bar_duration, "linear", start_practice); }
 	$("[id^='note']").fadeIn(0);
 	$("[id^='sharp']").fadeOut(0);
 	$("[id^='note']").each(function (note_num) {
-		var note_info = note_map[Math.floor(+min_note + Math.random() * (max_note - min_note))]; // Decide which note to generate.
-		var temp_note = note_info.substring(3, 5); 
-		if (note_info.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) { // Make notes sharp.
-			temp_note = note_info.substring(3, 4) + "#" + note_info.substring(4, 5);
-			$("#sharp" + note_num).fadeIn(0);
+		if (desired_notes[0]) { // desired_notes is an array when notes are preselected, empty when randomly generated
+			if (desired_notes[0] === -1) {
+				$("#note" + note_num).fadeOut(0);
+				var note_info = "127";
+				var temp_note = "";
+			} else {
+				var note_info = note_map[desired_notes[0].toString().substring(0, 2)];
+				var temp_note = note_info.substring(3, 5);
+				if (Number.parseInt(desired_notes[0]).isNan) {
+					temp_note = note_info.substring(3, 4) + "#" + note_info.substring(4, 5);
+					$("#sharp" + note_num).fadeIn(0);
+				}
+			}
+			desired_notes.shift();
+		} else {
+			var note_info = note_map[Math.floor(+min_note + Math.random() * (max_note - min_note))]; // Decide which note to generate.
+			var temp_note = note_info.substring(3, 5);
+			if (note_info.substring(3, 4).match("[CDFGA]") && Math.random() > 0.50) { // Make notes sharp.
+				temp_note = note_info.substring(3, 4) + "#" + note_info.substring(4, 5);
+				$("#sharp" + note_num).fadeIn(0);
+			}
 		}
 		staff_notes[note_num] = temp_note;
 		this.style.top = parseInt(note_info.substring(0, 3), 10) + "px";
@@ -155,14 +181,6 @@ function continue_practice(success) { // success = true when note is played, fal
 	}
 }
 
-async function use_bar() {
-	while (true) {
-		await new Promise(resolve => setTimeout(resolve, 1));
-		bar_position = parseInt($("#bar").css("left").substring(0, 3));
-		if (bar_position > current_note_position + 25) { continue_practice(false); }
-	}
-}
-
 $("[id$='note']").on("change", update_note_range);
 async function update_note_range() {
 	await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds.
@@ -178,3 +196,14 @@ $("#barcheckbox").on("click", function toggle_bpm_field() {
 	if (!$("#barcheckbox").prop("checked")) { $("[id^='bpm']").fadeIn(0); }
 	else { $("[id^='bpm']").fadeOut(0); }
 });
+
+$("#playmusic").on("click", function play_music() {
+	switch ($("#music").val()) {
+		case "Ode to Joy":
+			desired_notes = Object.assign(desired_notes, window.ode_to_joy_converted);
+			start_practice();
+			break;
+		default: return;
+	}
+});
+
