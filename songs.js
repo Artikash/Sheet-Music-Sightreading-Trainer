@@ -9,13 +9,13 @@
 }
 
 $(window).on("load", function initializesongs() {
-	var flower_dance_notes = "D#5C#5G#5C#5D#5C#5G#4C#5";
-	window.flower_dance_converted = convertNotes(flower_dance_notes);
-	window.flower_dance_converted.shift();
-	var ode_to_joy_notes = "E4E4F4G4G4F4E4D4C4C4D4E4E4D4D4G3E4E4F4G4G4F4E4D4C4C4D4E4D4C4C4RD4D4E4G3D4F4E4G3D4F4E4D4C4D4G3RE4E4F4G4G4F4E4D4C4C4D4E4D4C4C4R";
-	window.ode_to_joy_converted = convertNotes(ode_to_joy_notes);
-	window.ode_to_joy_converted.shift();
-	var fur_elise_notes = "E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4G#4B4C5RE4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4C5B4A4RB4C5D5E5RG4F5E5D5RF4E5D5C5RE4D5C5B4E4E4E4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4G#4B4C5RE4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4C5B4A4RRRRRRRRR";
-	window.fur_elise_converted = convertNotes(fur_elise_notes);
-	window.fur_elise_converted.shift();
+	var flowerDanceNotes = "D#5C#5G#5C#5D#5C#5G#4C#5";
+	window.flowerDanceConverted = convertNotes(flowerDanceNotes);
+	window.flowerDanceConverted.shift();
+	var odeToJoyNotes = "E4E4F4G4G4F4E4D4C4C4D4E4E4D4D4G3E4E4F4G4G4F4E4D4C4C4D4E4D4C4C4RD4D4E4G3D4F4E4G3D4F4E4D4C4D4G3RE4E4F4G4G4F4E4D4C4C4D4E4D4C4C4R";
+	window.odeToJoyConverted = convertNotes(odeToJoyNotes);
+	window.odeToJoyConverted.shift();
+	var furEliseNotes = "E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4G#4B4C5RE4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4C5B4A4RB4C5D5E5RG4F5E5D5RF4E5D5C5RE4D5C5B4E4E4E4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4G#4B4C5RE4E5D#5E5D#5E5B4D5C5A4RC4E4A4B4RE4C5B4A4RRRRRRRRR";
+	window.furEliseConverted = convertNotes(furEliseNotes);
+	window.furEliseConverted.shift();
 });
