@@ -12,7 +12,7 @@ var current_note_position = 175;
 var max_whitenoise = 0;
 var whitenoise_measurements = 0;
 var notes_played = 0;
-var staff_notes = ["", "", "", "", "", "", "", ""];
+var staff_notes = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 var desired_notes = [];
 var min_note = 0;
 var max_note = 26;
@@ -124,16 +124,27 @@ function interpret_audio_stream(timeseries, sample_rate) {
 
 function start_practice() { 
 	bar_enabled = !$("#barcheckbox").prop("checked");
-	if (parseFloat($("#bpm").val())) { bar_duration = 540000 / $("#bpm").val(); } // Conversion of user input to animation speed.
+	if (parseFloat($("#bpm").val())) { bar_duration = 1080000 / $("#bpm").val(); } // Conversion of user input to animation speed.
 	notes_played = 0;
 	current_note_position = 175;
 	$("#bar").stop();
 	$("#bar").css("left", "160px");
-	if (bar_enabled) { $("#bar").animate({ left: "560px" }, bar_duration, "linear", start_practice); }
+	if (bar_enabled) { $("#bar").animate({ left: "960px" }, bar_duration, "linear", start_practice); }
 	$("[id^='note']").fadeIn(0);
 	$("[id^='sharp']").fadeOut(0);
+	$("#Extra").fadeOut(0);
 	$("[id^='note']").each(function (note_num) {
 		if (desired_notes[0]) { // desired_notes is an array when notes are preselected, empty when randomly generated
+			if (note_num === 15 && desired_notes[1]) {
+				if (desired_notes[1] !== -1) {
+					$("#Extra").fadeIn(0);
+					var extra_note_info = note_map[desired_notes[1].toString().substring(0, 2)];
+					if (isNaN(desired_notes[1])) { $("#sharpExtra").fadeIn(0); }
+					$("#Extra").css("top", parseInt(extra_note_info.substring(0, 3), 10) + "px");
+					$("#sharpExtra").css("top", parseInt(extra_note_info.substring(0, 3)) - 12 + "px");
+					$("#Extra").attr("src", extra_note_info.length === 6 ? "Images\\notewithline.png" : "Images\\note.png"); 
+				}
+			}
 			if (desired_notes[0] === -1) {
 				$("#note" + note_num).fadeOut(0);
 				var note_info = "127";
@@ -164,11 +175,11 @@ function start_practice() {
 }
 
 function continue_practice(success) { // success = true when note is played, false when bar passes over note without being played
-	if (notes_played === 7 && !bar_enabled) {
+	if (notes_played === 15 && !bar_enabled) {
 		start_practice();
 	}
 	else {
-		var bar_leniency = 108000 / bar_duration;
+		var bar_leniency = 216000 / bar_duration;
 		if (success && (!bar_enabled || Math.abs(bar_position + bar_leniency - current_note_position - 25) < 25)) {
 			$("[id $=" + notes_played + "]").fadeOut(500);
 			$("#loading").text("Successfully played " + current_note);
@@ -177,7 +188,7 @@ function continue_practice(success) { // success = true when note is played, fal
 		else { $("[id $=note" + notes_played + "]").prop("src", "Images\\rednote.png"); }
 		notes_played++; // Please note the order of these statements if you're going through the code in your head.
 		current_note = staff_notes[notes_played];
-		current_note_position = parseInt($("[id $=note" + Math.min(notes_played, 7) + "]").css("left").substring(0, 3));
+		current_note_position = parseInt($("[id $=note" + Math.min(notes_played, 15) + "]").css("left").substring(0, 3));
 	}
 }
 
