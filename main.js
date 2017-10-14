@@ -30,7 +30,7 @@ for (var i = 0; i < 72; i++) { // Fill up the mapping between frequencies and no
 	testFrequencies = testFrequencies.concat([note]);
 }
 
-$(window).on("load", function initialize() {
+$(window).on("load", function () {
 	var getUserMedia = navigator.getUserMedia;
 	getUserMedia = getUserMedia || navigator.webkitGetUserMedia;
 	getUserMedia = getUserMedia || navigator.mozGetUserMedia;

@@ -8,7 +8,7 @@
 	});
 }
 
-$(window).on("load", function initializesongs() {
+$(window).on("load", function () {
 	var flowerDanceNotes = "D#5C#5G#5C#5D#5C#5G#4C#5";
 	window.flowerDanceConverted = convertNotes(flowerDanceNotes);
 	window.flowerDanceConverted.shift();
