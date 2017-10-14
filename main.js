@@ -136,7 +136,7 @@ function startPractice() {
 	$("[id^='note']").each(function (noteNum) {
 		if (desiredNotes[0]) { // desiredNotes is an array when notes are preselected, empty when randomly generated
 			if (noteNum === 15 && desiredNotes[1]) {
-				if (desiredNotes[1] !== -1) { // Code only run if the next note is not a rest.
+				if (desiredNotes[1] !== -1) { // Code only runs if the next note is not a rest.
 					$("#Extra").fadeIn(0);
 					var extraNoteInfo = noteMap[desiredNotes[1].toString().substring(0, 2)];
 					if (isNaN(desiredNotes[1])) { $("#sharpExtra").fadeIn(0); }
@@ -157,7 +157,7 @@ function startPractice() {
 					$("#sharp" + noteNum).fadeIn(0);
 				}
 			}
-			desiredNotes.shift(); // Remove notes once generated.
+			desiredNotes.shift(); // Remove pregenerated notes once used.
 		} else {
 			var noteInfo = noteMap[Math.floor(+minNote + Math.random() * (maxNote - minNote))]; // Decide which note to generate.
 			var tempNote = noteInfo.substring(3, 5);
