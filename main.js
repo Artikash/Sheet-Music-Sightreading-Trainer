@@ -17,7 +17,7 @@ var desired_notes = [];
 var min_note = 0;
 var max_note = 26;
 var bar_enabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
-var bar_position = 160;
+var bar_position = 135;
 var bar_duration = 30000;
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audio_context = null;
@@ -126,10 +126,10 @@ function start_practice() {
 	bar_enabled = !$("#barcheckbox").prop("checked");
 	if (parseFloat($("#bpm").val())) { bar_duration = 1080000 / $("#bpm").val(); } // Conversion of user input to animation speed.
 	notes_played = 0;
-	current_note_position = 175;
+	current_note_position = 150;
 	$("#bar").stop();
-	$("#bar").css("left", "160px");
-	if (bar_enabled) { $("#bar").animate({ left: "960px" }, bar_duration, "linear", start_practice); }
+	$("#bar").css("left", "135px");
+	if (bar_enabled) { $("#bar").animate({ left: "935px" }, bar_duration, "linear", start_practice); }
 	$("[id^='note']").fadeIn(0);
 	$("[id^='sharp']").fadeOut(0);
 	$("#Extra").fadeOut(0);
