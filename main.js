@@ -124,12 +124,12 @@ function interpretAudioStream(timeseries, sampleRate) {
 
 function startPractice() { 
 	barEnabled = !$("#barcheckbox").prop("checked");
-	if (parseFloat($("#bpm").val())) { barDuration = 1080000 / $("#bpm").val(); } // Conversion of user input to animation speed.
+	if (parseFloat($("#bpm").val())) { barDuration = 970000 / $("#bpm").val(); } // Conversion of user input to animation speed.
 	notesPlayed = 0;
 	currentNotePosition = 150;
 	$("#bar").stop();
 	$("#bar").css("left", "135px");
-	if (barEnabled) { $("#bar").animate({ left: "935px" }, barDuration, "linear", startPractice); }
+	if (barEnabled) { $("#bar").animate({ left: "855px" }, barDuration, "linear", startPractice); }
 	$("[id^='note']").fadeIn(0);
 	$("[id^='sharp']").fadeOut(0);
 	$("#Extra").fadeOut(0);
