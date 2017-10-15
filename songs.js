@@ -5,7 +5,7 @@
     .replace(/([A-G]|R)/g, ",$&")
     .split(",")
     .map(function(note) {
-      if (note == "R") {
+      if (note === "R") {
         return -1;
       }
       var purenote = note.replace("#", "");

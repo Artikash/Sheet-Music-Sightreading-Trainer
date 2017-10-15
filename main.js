@@ -195,8 +195,8 @@ function startPractice() {
           var extraNoteInfo = noteMap[parseInt(desiredNotes[1].toString().substring(0, 2))];
           if (desiredNotes[1].includes("s")) {
             $("#sharpExtra").fadeIn(0);
-		  }
-		  $("#Extra").attr("height", 15);
+          }
+          $("#Extra").attr("height", 15);
           $("#Extra").css("top", parseInt(extraNoteInfo.substring(0, 3), 10) + "px");
           $("#sharpExtra").css("top", parseInt(extraNoteInfo.substring(0, 3)) - 12 + "px");
           $("#Extra").attr("src", extraNoteInfo.length === 7 ? "Images\\notewithline.png" : "Images\\note.png");
@@ -255,7 +255,7 @@ function continuePractice(success) {
   } else {
     var barLeniency = 216000 / barDuration;
     if (success && (!barEnabled || Math.abs(barPosition + barLeniency - currentNotePosition - 25) < 25)) {
-      $("[id $=" + notesPlayed + "]").fadeOut(500);
+      $("#note" + notesPlayed + ",#sharp" + notesPlayed).fadeOut(500);
       $("#loading").text("Successfully played " + currentNote);
     } else if (success) {
       return;
