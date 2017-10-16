@@ -161,7 +161,7 @@ function interpretAudioStream(timeseries, sampleRate) {
     console.log("expected" + currentNote + "actual" + dominantFrequency.name);
     try {
       // b.name can sometimes not exist and throw an error, so try block is used
-      if (dominantFrequency.name === currentNote || a.name === currentNote || b.name === currentNote) {
+      if ($.inArray(currentNote, [dominantFrequency, a, b]) || currentNote === "") {
         continuePractice(true);
       }
     } finally {
@@ -258,7 +258,9 @@ function continuePractice(success) {
     var barLeniency = 216000 / barDuration;
     if (success && (!barEnabled || Math.abs(barPosition + barLeniency - currentNotePosition - 25) < 25)) {
       $("#note" + notesPlayed + ",#sharp" + notesPlayed).fadeOut(500);
-      $("#loading").text("Successfully played " + currentNote);
+      if (currentNote !== "") {
+        $("#loading").text("Successfully played " + currentNote);
+      }
     } else if (success) {
       return;
     } else {
