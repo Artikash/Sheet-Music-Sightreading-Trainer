@@ -171,7 +171,6 @@ function interpretAudioStream(timeseries, sampleRate) {
 }
 
 function startPractice() {
-  console.log("called");
   barEnabled = !$("#barcheckbox").prop("checked");
   if (parseFloat($("#bpm").val())) {
     barDuration = 970000 / $("#bpm").val();
@@ -180,7 +179,6 @@ function startPractice() {
   currentNotePosition = 150;
   $("#bar").stop();
   $("#bar").css("left", "135px");
-  $("#bar").fadeOut();
   $("[id^='note']").fadeIn(0);
   $("[id^='sharp']").fadeOut(0);
   $("#Extra").fadeOut(0);
@@ -245,9 +243,10 @@ function startPractice() {
     }
   });
   currentNote = staffNotes[0];
-  $("#bar").fadeIn(3000);
   if (barEnabled) {
-    $("#bar").animate({ left: "855px" }, barDuration, "linear", startPractice);
+    $("#bar")
+      .delay(3000)
+      .animate({ left: "855px" }, barDuration, "linear", startPractice);
   }
 }
 
