@@ -9,13 +9,12 @@
         return -1;
       }
       var purenote = note.replace("#", "");
-      var unpaddednote = note === purenote ? notes.lastIndexOf(note.substring(0, 2)) + note.substring(2, 3) : notes.lastIndexOf(purenote.substring(0, 2)) + "s" + purenote.substring(2, 3);
-      return notes.lastIndexOf(purenote.substring(0, 2)) > 10 ? unpaddednote : "0" + unpaddednote;
+      return note === purenote ? notes.lastIndexOf(note.substring(0, 2)) + note.substring(2, 3) : notes.lastIndexOf(purenote.substring(0, 2)) + "s" + purenote.substring(2, 3);
     });
 }
 
 $(window).on("load", function() {
-  var flowerDanceNotes = "D#5HC#5HG#5HC#5HD#5HC#5HG#4HC#5";
+  var flowerDanceNotes = "D#5H  C#5H  G#5H  C#5H  D#5H  C#5H  G#4H  C#5";
   window.flowerDanceConverted = convertNotes(flowerDanceNotes);
   window.flowerDanceConverted.shift();
   var odeToJoyNotes =

@@ -69,8 +69,6 @@ $(window).on("load", function() {
   updateNoteRange(); // Because autocomplete exists
 });
 
-
-
 function useAudioStream(stream) {
   audioContext = new AudioContext(); // These four lines set up microphone
   var microphone = audioContext.createMediaStreamSource(stream);
@@ -152,8 +150,6 @@ function interpretAudioStream(timeseries, sampleRate) {
   }
 }
 
-
-
 function startPractice() {
   barEnabled = !$("#barcheckbox").prop("checked");
   if (parseFloat($("#bpm").val())) {
@@ -181,7 +177,7 @@ function startPractice() {
         tempNote = noteInfo.substring(3, 4) + "#" + noteInfo.substring(4, 5);
         $("#sharp" + noteNum).fadeIn(0);
       }
-      var whole = desiredNotes[0].substring(2, 3) === "W" ? true : false; // Make notes whole
+      var whole = desiredNotes[0].includes("W") ? true : false; // Make notes whole
     }
     desiredNotes.shift(); // Remove pregenerated notes once used.
     staffNotes[noteNum] = tempNote;
@@ -288,6 +284,9 @@ async function updateNoteRange() {
   $("#minnotedisplay").text("Lowest note: " + noteMap[minNote].substring(3, 5));
   $("#maxnotedisplay").text("Highest note: E2"); // Displayed iff maxNote === 0
   $("#maxnotedisplay").text("Highest note: " + noteMap[maxNote - 1].substring(3, 5));
+  if ($("#playmusic").val() === "Random") {
+    desiredNotes = [];
+  }
 }
 
 $("#barcheckbox").on("click", function() {
@@ -301,6 +300,7 @@ $("#barcheckbox").on("click", function() {
 $("#playmusic").on("click", function() {
   switch ($("#music").val()) {
     case "Random":
+      desiredNotes = [];
       generateRandomNotes(16);
       startPractice();
       break;
@@ -324,7 +324,11 @@ function generateRandomNotes(size) {
       if (noteMap[desiredNotes[i]].substring(3, 4).match("[CDFGA]") && Math.random() > 0.5 && $("#_sharpcheckbox").prop("checked")) {
         desiredNotes[i] += "s";
       }
-      desiredNotes[i] += Math.random() > 0.5 && $("#wholecheckbox").prop("checked") ? "H" : "W";
+      if (Math.random() > 0.5 && $("#wholecheckbox").prop("checked")) {
+        desiredNotes[i] += "W";
+      } else {
+        desiredNotes[i] += "H";
+      }
     }
   }
 }
