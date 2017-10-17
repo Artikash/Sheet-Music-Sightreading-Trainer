@@ -1,8 +1,19 @@
-var C2 = 65.41; // C2 note, in Hz.
-var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-var octaves = ["2", "3", "4", "5", "6", "7"];
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var audioContext = null;
+var scriptProcessor = null;
+const C2 = 65.41; // C2 note, in Hz.
+const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const octaves = ["2", "3", "4", "5", "6", "7"];
 var testFrequencies = [];
-var noteMap = [
+var ios = false;
+for (var i = 0; i < 72; i++) {
+  // Fill up the mapping between frequencies and notes
+  var noteFrequency = C2 * Math.pow(2, i / 12);
+  var noteName = notes[i % 12] + octaves[Math.floor(i / 12)];
+  var note = { frequency: noteFrequency, name: noteName };
+  testFrequencies = testFrequencies.concat([note]);
+}
+const noteMap = [
   "222E2UL",
   "214F2U",
   "206G2U",
@@ -32,10 +43,10 @@ var noteMap = [
 ];
 // The above encodes note info like so: first 3 digits represent y coord, letter represents note name
 // next digit represents octave, U or D shows whether stem goes up or down, L is added at the end if a ledger line is needed.
-var currentNote = "";
-var currentNotePosition = 175;
 var maxWhitenoise = 0;
 var whitenoiseMeasurements = 0;
+var currentNote = "";
+var currentNotePosition = 175;
 var notesPlayed = 0;
 var staffNotes = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 var desiredNotes = [];
@@ -44,17 +55,6 @@ var maxNote = 26;
 var barEnabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
 var barPosition = 135;
 var barDuration = 30000;
-var AudioContext = window.AudioContext || window.webkitAudioContext;
-var audioContext = null;
-var scriptProcessor = null;
-var ios = false;
-for (var i = 0; i < 72; i++) {
-  // Fill up the mapping between frequencies and notes
-  var noteFrequency = C2 * Math.pow(2, i / 12);
-  var noteName = notes[i % 12] + octaves[Math.floor(i / 12)];
-  var note = { frequency: noteFrequency, name: noteName };
-  testFrequencies = testFrequencies.concat([note]);
-}
 
 $(window).on("load", function() {
   var getUserMedia = navigator.getUserMedia;
@@ -76,7 +76,8 @@ async function useBar() {
     barPosition = parseInt(
       $("#bar")
         .css("left")
-        .substring(0, 3)
+        .substring(0, 3),
+      10
     );
     if (barPosition > currentNotePosition + 25) {
       continuePractice(false);
@@ -156,16 +157,11 @@ function interpretAudioStream(timeseries, sampleRate) {
   var confidenceThreshold = 15; // empirical, arbitrary.
   if (confidence > confidenceThreshold && maximumMagnitude > maxWhitenoise * 3) {
     var dominantFrequency = testFrequencies[maximumIndex];
-    var a = testFrequencies[maximumIndex + 12]; // The algorithm can be off by 1 octave, so need these as workarounds.
-    var b = testFrequencies[maximumIndex - 12];
+    var a = testFrequencies[maximumIndex + 12] || dominantFrequency; // The algorithm can be off by 1 octave, so need these as workarounds.
+    var b = testFrequencies[maximumIndex - 12] || dominantFrequency; // The array indexes specified might not exist, or statement catches that.
     console.log("expected" + currentNote + "actual" + dominantFrequency.name);
-    try {
-      // b.name can sometimes not exist and throw an error, so try block is used
-      if ($.inArray(currentNote, [dominantFrequency, a, b]) || currentNote === "") {
-        continuePractice(true);
-      }
-    } finally {
-      return;
+    if (currentNote === "" || [dominantFrequency.name, a.name, b.name].indexOf(currentNote) > -1) {
+      continuePractice(true);
     }
   }
 }
@@ -182,52 +178,29 @@ function startPractice() {
   $("[id^='note']").fadeIn(0);
   $("[id^='sharp']").fadeOut(0);
   $("#Extra").fadeOut(0);
+  //if (!desiredNotes[1]) {
+  generateRandomNotes(16);
+  //}
   $("[id^='note']").each(function(noteNum) {
-    if (desiredNotes[0]) {
-      // desiredNotes is an array when notes are preselected, empty when randomly generated
-      if (noteNum === 15 && desiredNotes[1]) {
-        if (desiredNotes[1] !== -1) {
-          // Code only runs if the next note is not a rest.
-          $("#Extra").fadeIn(0);
-          var extraNoteInfo = noteMap[parseInt(desiredNotes[1].toString().substring(0, 2))];
-          if (desiredNotes[1].includes("s")) {
-            $("#sharpExtra").fadeIn(0);
-          }
-          $("#Extra").attr("height", 15);
-          $("#Extra").css("top", parseInt(extraNoteInfo.substring(0, 3), 10) + "px");
-          $("#sharpExtra").css("top", parseInt(extraNoteInfo.substring(0, 3)) - 12 + "px");
-          $("#Extra").attr("src", extraNoteInfo.length === 7 ? "Images\\notewithline.png" : "Images\\note.png");
-        }
-      }
-      if (desiredNotes[0] === -1) {
-        // Only true when there should be a rest (no note)
-        $("#note" + noteNum).fadeOut(0);
-        var noteInfo = "127  L";
-        var tempNote = "";
-      } else {
-        var noteInfo = noteMap[parseInt(desiredNotes[0].toString().substring(0, 2))];
-        var tempNote = noteInfo.substring(3, 5);
-        if (desiredNotes[0].includes("s")) {
-          // Make notes sharp.
-          tempNote = noteInfo.substring(3, 4) + "#" + noteInfo.substring(4, 5);
-          $("#sharp" + noteNum).fadeIn(0);
-        }
-        var whole = desiredNotes[0].substring(2, 3) === "W" ? true : false; // Make notes whole
-      }
-      desiredNotes.shift(); // Remove pregenerated notes once used.
+    if (desiredNotes[0] === -1) {
+      // Only true when there should be a rest (no note)
+      $("#note" + noteNum).fadeOut(0);
+      var noteInfo = "127  L";
+      var tempNote = "";
     } else {
-      var noteInfo = noteMap[Math.floor(+minNote + Math.random() * (maxNote - minNote))]; // Decide which note to generate.
+      var noteInfo = noteMap[parseInt(desiredNotes[0].toString().substring(0, 2), 10)];
       var tempNote = noteInfo.substring(3, 5);
-      if (noteInfo.substring(3, 4).match("[CDFGA]") && Math.random() > 0.5 && $("#_sharpcheckbox").prop("checked")) {
+      if (desiredNotes[0].includes("s")) {
         // Make notes sharp.
         tempNote = noteInfo.substring(3, 4) + "#" + noteInfo.substring(4, 5);
         $("#sharp" + noteNum).fadeIn(0);
       }
-      var whole = Math.random() > 0.5 && $("#wholecheckbox").prop("checked") ? true : false; // Make notes whole
+      var whole = desiredNotes[0].substring(2, 3) === "W" ? true : false; // Make notes whole
     }
+    desiredNotes.shift(); // Remove pregenerated notes once used.
     staffNotes[noteNum] = tempNote;
     this.style.top = parseInt(noteInfo.substring(0, 3), 10) + "px";
-    $("#sharp" + noteNum).css("top", parseInt(noteInfo.substring(0, 3)) - 12 + "px");
+    $("#sharp" + noteNum).css("top", parseInt(noteInfo.substring(0, 3), 10) - 12 + "px");
     if (whole) {
       this.height = 15;
       this.src = noteInfo.length === 7 ? "Images\\notewithline.png" : "Images\\note.png"; // length = 7 iff L is in noteInfo
@@ -239,6 +212,23 @@ function startPractice() {
         this.style.top = -54 + parseInt(noteInfo.substring(0, 3), 10) + "px";
       } else {
         this.src = noteInfo.length === 7 ? "Images\\halfnotedownwithline.png" : "Images\\halfnotedownnoline.png";
+      }
+    }
+    if (noteNum === 15) {
+      if (!desiredNotes[0]) {
+        desiredNotes[0] = Math.floor(+minNote + Math.random() * (maxNote - minNote)) + "H";
+      }
+      if (desiredNotes[0] !== -1) {
+        // Code only runs if the next note is not a rest.
+        $("#Extra").fadeIn(0);
+        var extraNoteInfo = noteMap[parseInt(desiredNotes[0].toString().substring(0, 2), 10)];
+        if (desiredNotes[0].includes("s")) {
+          $("#sharpExtra").fadeIn(0);
+        }
+        $("#Extra").attr("height", 15);
+        $("#Extra").css("top", parseInt(extraNoteInfo.substring(0, 3), 10) + "px");
+        $("#sharpExtra").css("top", parseInt(extraNoteInfo.substring(0, 3), 10) - 12 + "px");
+        $("#Extra").attr("src", extraNoteInfo.length === 7 ? "Images\\notewithline.png" : "Images\\note.png");
       }
     }
   });
@@ -276,7 +266,8 @@ function continuePractice(success) {
     currentNotePosition = parseInt(
       $("[id $=note" + Math.min(notesPlayed, 15) + "]")
         .css("left")
-        .substring(0, 3)
+        .substring(0, 3),
+      10
     );
   }
 }
@@ -306,7 +297,7 @@ $("#barcheckbox").on("click", function() {
 $("#playmusic").on("click", function() {
   switch ($("#music").val()) {
     case "Random":
-      desiredNotes = [];
+      generateRandomNotes(16);
       startPractice();
       break;
     case "Ode to Joy":
@@ -321,3 +312,15 @@ $("#playmusic").on("click", function() {
       return;
   }
 });
+
+function generateRandomNotes(size) {
+  for (var i = 0; i < size; i++) {
+    if (desiredNotes[i] === undefined) {
+      desiredNotes[i] = Math.floor(+minNote + Math.random() * (maxNote - minNote));
+      if (noteMap[desiredNotes[i]].substring(3, 4).match("[CDFGA]") && Math.random() > 0.5 && $("#_sharpcheckbox").prop("checked")) {
+        desiredNotes[i] += "s";
+      }
+      desiredNotes[i] += Math.random() > 0.5 && $("#wholecheckbox").prop("checked") ? "H" : "W";
+    }
+  }
+}
