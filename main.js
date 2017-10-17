@@ -42,7 +42,7 @@ const noteMap = [
   "016A5DL"
 ];
 // The above encodes note info like so: first 3 digits represent y coord, letter represents note name
-// next digit represents octave, U or D shows whether stem goes up or down, L is added at the end if a ledger line is needed.
+// next digit represents octave, U or D shows whether stem goes up or down, L is added at the end if a ledger line is needed
 var maxWhitenoise = 0;
 var whitenoiseMeasurements = 0;
 var currentNote = "";
@@ -52,7 +52,7 @@ var staffNotes = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 var desiredNotes = [];
 var minNote = 0;
 var maxNote = 26;
-var barEnabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes.
+var barEnabled = true; // bar in the code refers to the bar moving across the screen dictating when to play notes
 var barPosition = 135;
 var barDuration = 30000;
 
@@ -82,7 +82,7 @@ function useAudioStream(stream) {
     if (!recording) return;
     buffer = buffer.concat(Array.prototype.slice.call(event.inputBuffer.getChannelData(0)));
     if (buffer.length > sampleLengthMilliseconds * audioContext.sampleRate / 1000) {
-      // Stop recording after sampleLengthMilliseconds.
+      // Stop recording after sampleLengthMilliseconds
       recording = false;
       interpretAudioStream(buffer, audioContext.sampleRate);
       buffer = [];
@@ -99,29 +99,29 @@ $("#resume").on("click", function() {
 });
 
 function interpretAudioStream(timeseries, sampleRate) {
-  var scaleFactor = 2 * Math.PI / sampleRate; // 2pi * frequency gives the appropriate period to (co)sine.
+  var scaleFactor = 2 * Math.PI / sampleRate; // 2pi * frequency gives the appropriate period to (co)sine
   var frequencyAmplitudes = testFrequencies.map(function(f) {
     var frequency = f.frequency;
-    var accumulator = [0, 0]; // Represent a complex number as a length-2 array [ real, imaginary ].
+    var accumulator = [0, 0]; // Represent a complex number as a length-2 array [ real, imaginary ]
     for (var t = 0; t < timeseries.length; t++) {
-      accumulator[0] += timeseries[t] * Math.cos(scaleFactor * frequency * t); // timeseries index / sampleRate gives the appropriate time coordinate.
+      accumulator[0] += timeseries[t] * Math.cos(scaleFactor * frequency * t); // timeseries index / sampleRate gives the appropriate time coordinate
       accumulator[1] += timeseries[t] * Math.sin(scaleFactor * frequency * t);
     }
     return accumulator;
   });
   var magnitudes = frequencyAmplitudes.map(function(z) {
-    return z[0] * z[0] + z[1] * z[1]; // Compute the (squared) magnitudes of the complex amplitudes for each test frequency.
+    return z[0] * z[0] + z[1] * z[1]; // Compute the (squared) magnitudes of the complex amplitudes for each test frequency
   });
   var maximumIndex = -1;
   var maximumMagnitude = 0;
   for (var i = 0; i < magnitudes.length; i++) {
-    // Find the maximum in the list of magnitudes.
+    // Find the maximum in the list of magnitudes
     if (magnitudes[i] <= maximumMagnitude) continue;
     maximumIndex = i;
     maximumMagnitude = magnitudes[i];
   }
   if (whitenoiseMeasurements < 5) {
-    // The white noise measurements make sure that white noise doesn't register as a note.
+    // The white noise measurements make sure that white noise doesn't register as a note
     $("#loading").text("Calibrating microphone:" + (whitenoiseMeasurements + 1) * 100 / 5 + "%");
     whitenoiseMeasurements++;
     if (maxWhitenoise < maximumMagnitude) {
@@ -129,7 +129,7 @@ function interpretAudioStream(timeseries, sampleRate) {
     }
   }
   if (whitenoiseMeasurements === 5) {
-    // Once enough data on whitenoise is gathered, generate sheet music and start listening.
+    // Once enough data on whitenoise is gathered, generate sheet music and start listening
     $("#loading").text("");
     whitenoiseMeasurements++;
   }
@@ -138,11 +138,11 @@ function interpretAudioStream(timeseries, sampleRate) {
       return a + b;
     }, 0) / magnitudes.length;
   var confidence = maximumMagnitude / average;
-  var confidenceThreshold = 15; // empirical, arbitrary.
+  var confidenceThreshold = 15; // empirical, arbitrary
   if (confidence > confidenceThreshold && maximumMagnitude > maxWhitenoise * 3) {
     var dominantFrequency = testFrequencies[maximumIndex];
-    var a = testFrequencies[maximumIndex + 12] || dominantFrequency; // The algorithm can be off by 1 octave, so need these as workarounds.
-    var b = testFrequencies[maximumIndex - 12] || dominantFrequency; // The array indexes specified might not exist, or statement catches that.
+    var a = testFrequencies[maximumIndex + 12] || dominantFrequency; // The algorithm can be off by 1 octave, so need these as workarounds
+    var b = testFrequencies[maximumIndex - 12] || dominantFrequency; // The array indexes specified might not exist, or statement catches that
     console.log("expected" + currentNote + "actual" + dominantFrequency.name);
     if (currentNote === "" || [dominantFrequency.name, a.name, b.name].indexOf(currentNote) > -1) {
       continuePractice(true);
@@ -154,7 +154,7 @@ function startPractice() {
   barEnabled = !$("#barcheckbox").prop("checked");
   if (parseFloat($("#bpm").val())) {
     barDuration = 970000 / $("#bpm").val();
-  } // Conversion of user input to animation speed.
+  } // Conversion of user input to animation speed
   notesPlayed = 0;
   currentNotePosition = 150;
   $("#bar").stop();
@@ -179,7 +179,7 @@ function startPractice() {
       }
       var whole = desiredNotes[0].includes("W") ? true : false; // Make notes whole
     }
-    desiredNotes.shift(); // Remove pregenerated notes once used.
+    desiredNotes.shift(); // Remove pregenerated notes once used
     staffNotes[noteNum] = tempNote;
     this.style.top = parseInt(noteInfo.substring(0, 3), 10) + "px";
     $("#sharp" + noteNum).css("top", parseInt(noteInfo.substring(0, 3), 10) - 12 + "px");
@@ -201,7 +201,7 @@ function startPractice() {
         desiredNotes[0] = Math.floor(+minNote + Math.random() * (maxNote - minNote)) + "H";
       }
       if (desiredNotes[0] !== -1) {
-        // Code only runs if the next note is not a rest.
+        // Code only runs if the next note is not a rest
         $("#Extra").fadeIn(0);
         var extraNoteInfo = noteMap[parseInt(desiredNotes[0].toString().substring(0, 2), 10)];
         if (desiredNotes[0].includes("s")) {
@@ -261,7 +261,7 @@ function continuePractice(success) {
           .slice(0, -4) + "red.png"
       );
     }
-    notesPlayed++; // Please note the order of these statements if you're going through the code in your head.
+    notesPlayed++; // Please note the order of these statements if you're going through the code in your head
     currentNote = staffNotes[notesPlayed];
     currentNotePosition = parseInt(
       $("[id $=note" + Math.min(notesPlayed, 15) + "]")
@@ -274,7 +274,7 @@ function continuePractice(success) {
 
 $("[id$='note']").on("change", updateNoteRange);
 async function updateNoteRange() {
-  await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds.
+  await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds
   minNote = $("#minnote").val();
   maxNote = $("#maxnote").val();
   if (+minNote > +maxNote) {
