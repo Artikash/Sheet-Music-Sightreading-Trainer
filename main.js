@@ -67,23 +67,9 @@ $(window).on("load", function() {
     $("[id^='bpm']").fadeOut(0);
   }
   updateNoteRange(); // Because autocomplete exists
-  useBar();
 });
 
-async function useBar() {
-  while (true) {
-    await new Promise(resolve => setTimeout(resolve, 1));
-    barPosition = parseInt(
-      $("#bar")
-        .css("left")
-        .substring(0, 3),
-      10
-    );
-    if (barPosition > currentNotePosition + 25) {
-      continuePractice(false);
-    }
-  }
-}
+
 
 function useAudioStream(stream) {
   audioContext = new AudioContext(); // These four lines set up microphone
@@ -166,6 +152,8 @@ function interpretAudioStream(timeseries, sampleRate) {
   }
 }
 
+
+
 function startPractice() {
   barEnabled = !$("#barcheckbox").prop("checked");
   if (parseFloat($("#bpm").val())) {
@@ -178,9 +166,7 @@ function startPractice() {
   $("[id^='note']").fadeIn(0);
   $("[id^='sharp']").fadeOut(0);
   $("#Extra").fadeOut(0);
-  //if (!desiredNotes[1]) {
   generateRandomNotes(16);
-  //}
   $("[id^='note']").each(function(noteNum) {
     if (desiredNotes[0] === -1) {
       // Only true when there should be a rest (no note)
@@ -236,7 +222,25 @@ function startPractice() {
   if (barEnabled) {
     $("#bar")
       .delay(3000)
-      .animate({ left: "855px" }, barDuration, "linear", startPractice);
+      .animate(
+        { left: "855px" },
+        {
+          duration: barDuration,
+          easing: "linear",
+          complete: startPractice,
+          progress: function() {
+            barPosition = parseInt(
+              $("#bar")
+                .css("left")
+                .substring(0, 3),
+              10
+            );
+            if (barPosition > currentNotePosition + 25) {
+              continuePractice(false);
+            }
+          }
+        }
+      );
   }
 }
 
