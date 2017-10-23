@@ -15,34 +15,37 @@
 	</div>
 	<h1>Sheet Music Sightreading Practice</h1>
 	<h2 id="loading"></h2>
+	<p></p>
 	<button id="resume">Click here if using iOS</button>
-	<p></p>
-	<select id="music">
-		<option value="Random">Pick a song!</option>
-		<option value="Random">Randomly Generated </option>
-		<option value="Ode to Joy">Ode to Joy (Suggested BPM : 120)</option>
-		<option value="Fur Elise">Fur Elise (Suggested BPM: 155)</option>
-		<option value="Coming Soon">More coming soon!</option>
-	</select>
-	<button id="playmusic">Play!</button>
-	<p></p>
-	<input type="checkbox" id="barcheckbox">Play notes at your own pace?
-	<br>
-	<img id="bpmimg" src="Images\bpmfield.png" alt="" width="80" height="50">
-	<input type="text" id="bpm" value="60">
-	<p></p>
-	<br>
-	<input type="checkbox" id="_sharpcheckbox" checked>Randomly generate sharps?
-	<br>
-	<input type="checkbox" id="wholecheckbox" checked>Randomly generate whole notes?
-	<p></p>
-	<input type="range" id="minnote" min="0" max="25" value="0">
-	<br>
-	<span id="minnotedisplay">Lowest Note: </span>
-	<br>
-	<input type="range" id="maxnote" min="0" max="26" value="26">
-	<br>
-	<span id="maxnotedisplay">Highest Note: </span>
+	<div id="settings">
+		<p></p>
+		<select id="music">
+			<option value="Random">Pick a song!</option>
+			<option value="Random">Randomly Generated </option>
+			<option value="Ode to Joy">Ode to Joy (Suggested BPM : 120)</option>
+			<option value="Fur Elise">Fur Elise (Suggested BPM: 155)</option>
+			<option value="Coming Soon">More coming soon!</option>
+		</select>
+		<button id="playmusic">Play!</button>
+		<p></p>
+		<input type="checkbox" id="barcheckbox">Play notes at your own pace?
+		<br>
+		<img id="bpmimg" src="Images\bpmfield.png" alt="" width="80" height="50">
+		<input type="text" id="bpm" value="60">
+		<p></p>
+		<br>
+		<input type="checkbox" id="_sharpcheckbox" checked>Randomly generate sharps?
+		<br>
+		<input type="checkbox" id="wholecheckbox" checked>Randomly generate whole notes?
+		<p></p>
+		<input type="range" id="minnote" min="0" max="25" value="0">
+		<br>
+		<span id="minnotedisplay">Lowest Note: </span>
+		<br>
+		<input type="range" id="maxnote" min="0" max="26" value="26">
+		<br>
+		<span id="maxnotedisplay">Highest Note: </span>
+	</div>
 	<p></p>
 	<p>First, allow microphone access. Once calibrated, select a song and press play. You should then start playing the notes on
 		your instrument as the bar passes over them.</p>
@@ -84,6 +87,12 @@
 			position: fixed;
 			top: 97px;
 			left: 860px;
+		}
+
+		#settings {
+			position: fixed;
+			top: 30px;
+			left: 930px;
 		}
 	</style>
 	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>

@@ -5,4 +5,7 @@
     $("#note" + i).css("left", i * 45 + 150 + "px");
     $("#sharp" + i).css("left", i * 45 + 140 + "px");
   }
+  if (navigator.userAgent.search("Safari")  < 0 || navigator.userAgent.search("Chrome") > -1) {
+    $("#resume").fadeOut(0);
+}
 });
