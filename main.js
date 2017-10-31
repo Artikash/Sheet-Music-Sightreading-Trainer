@@ -273,20 +273,21 @@ function continuePractice(success) {
 }
 
 $("[id$='note']").on("change", updateNoteRange);
-async function updateNoteRange() {
-  await new Promise(resolve => setTimeout(resolve, 5)); // Display glitches pop up if I don't wait a few milliseconds
+function updateNoteRange() {
   minNote = $("#minnote").val();
   maxNote = $("#maxnote").val();
   if (+minNote > +maxNote) {
     $("#maxnote").val(+minNote + 1);
     updateNoteRange();
   }
-  $("#minnotedisplay").text("Lowest note: " + noteMap[minNote].substring(3, 5));
-  $("#maxnotedisplay").text("Highest note: E2"); // Displayed iff maxNote === 0
-  $("#maxnotedisplay").text("Highest note: " + noteMap[maxNote - 1].substring(3, 5));
-  if ($("#playmusic").val() === "Random") {
-    desiredNotes = [];
-  }
+  setTimeout(function() { // Display glitches pop up unless I wait a millisecond
+    $("#minnotedisplay").text("Lowest note: " + noteMap[minNote].substring(3, 5));
+    $("#maxnotedisplay").text("Highest note: E2"); // Displayed iff maxNote === 0
+    $("#maxnotedisplay").text("Highest note: " + noteMap[maxNote - 1].substring(3, 5));
+    if ($("#playmusic").val() === "Random") {
+      desiredNotes = [];
+    }
+  }, 1);
 }
 
 $("#barcheckbox").on("click", function() {
