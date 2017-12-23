@@ -14,32 +14,32 @@ for (var i = 0; i < 72; i++) {
   testFrequencies = testFrequencies.concat([note]);
 }
 const noteMap = [
-  "222E2UL",
-  "214F2U",
-  "206G2U",
-  "198A2U",
-  "190B2U",
-  "182C3U",
-  "174D3D",
-  "166E3D",
-  "158F3D",
-  "150G3D",
-  "143A3D",
-  "135B3D",
-  "127C4DL",
-  "111C4UL",
-  "103D4U",
-  "095E4U",
-  "087F4U",
-  "080G4U",
-  "072A4U",
-  "064B4U",
-  "056C5D",
-  "048D5D",
-  "040E5D",
-  "032F5D",
-  "024G5D",
-  "016A5DL"
+  "214E2UL",
+  "206F2U",
+  "198G2U",
+  "190A2U",
+  "182B2U",
+  "174C3U",
+  "166D3D",
+  "158E3D",
+  "150F3D",
+  "142G3D",
+  "135A3D",
+  "127B3D",
+  "119C4DL",
+  "103C4UL",
+  "095D4U",
+  "087E4U",
+  "079F4U",
+  "072G4U",
+  "064A4U",
+  "056B4U",
+  "048C5D",
+  "040D5D",
+  "032E5D",
+  "024F5D",
+  "016G5D",
+  "008A5DL"
 ];
 // The above encodes note info like so: first 3 digits represent y coord, letter represents note name
 // next digit represents octave, U or D shows whether stem goes up or down, L is added at the end if a ledger line is needed
@@ -164,14 +164,16 @@ function startPractice() {
   $("#Extra").fadeOut(0);
   generateRandomNotes(16);
   $("[id^='note']").each(function(noteNum) {
+    var noteInfo;
+    var tempNote;
     if (desiredNotes[0] === -1) {
       // Only true when there should be a rest (no note)
       $("#note" + noteNum).fadeOut(0);
-      var noteInfo = "127  L";
-      var tempNote = "";
+      noteInfo = "127  L";
+      tempNote = "";
     } else {
-      var noteInfo = noteMap[parseInt(desiredNotes[0].toString().substring(0, 2), 10)];
-      var tempNote = noteInfo.substring(3, 5);
+      noteInfo = noteMap[parseInt(desiredNotes[0].toString().substring(0, 2), 10)];
+      tempNote = noteInfo.substring(3, 5);
       if (desiredNotes[0].includes("s")) {
         // Make notes sharp.
         tempNote = noteInfo.substring(3, 4) + "#" + noteInfo.substring(4, 5);
@@ -280,7 +282,8 @@ function updateNoteRange() {
     $("#maxnote").val(+minNote + 1);
     updateNoteRange();
   }
-  setTimeout(function() { // Display glitches pop up unless I wait a millisecond
+  setTimeout(function() {
+    // Display glitches pop up unless I wait a millisecond
     $("#minnotedisplay").text("Lowest note: " + noteMap[minNote].substring(3, 5));
     $("#maxnotedisplay").text("Highest note: E2"); // Displayed iff maxNote === 0
     $("#maxnotedisplay").text("Highest note: " + noteMap[maxNote - 1].substring(3, 5));
@@ -294,7 +297,7 @@ $("#barcheckbox").on("click", function() {
   if (!$("#barcheckbox").prop("checked")) {
     $("[id^='bpm']").fadeIn(0);
   } else {
-    $("[id^='bpm']").fadeOut(0);
+    $("[id^='bpm']").css("display", "none");
   }
 });
 

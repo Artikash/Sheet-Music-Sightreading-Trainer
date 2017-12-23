@@ -1,23 +1,22 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-	<title>Sight Reading Practice</title>
-	<meta charset="utf-8" />
+	<title>Sheet Music Sightreading Trainer</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-	<div id="container">
-		<img id="staff" src="Images\staff.png" alt="" width="900" height="230">
-		<img id="bar" src="Images\bar.png" alt="" width="2" height="230">
-		<img id="Extra" src="Images\halfnoteupwithline.png" alt="" width="29" height="70">
-		<img id="sharpExtra" src="Images\sharp.png" alt="" width="12" height="40">
+	<div class="jumbotron text-center">
+		<h1>Sheet Music Sightreading Practice</h1>
+		<button id="resume" class="btn btn-primary btn-lg">Click here if using iOS</button>
+		<h2 id="loading"></h2>
 	</div>
-	<h1>Sheet Music Sightreading Practice</h1>
-	<h2 id="loading"></h2>
-	<p></p>
-	<button id="resume">Click here if using iOS</button>
-	<div id="settings">
+	<div id="settings" class="col-sm-2">
 		<p></p>
 		<select id="music">
 			<option value="Random">Pick a song!</option>
@@ -38,58 +37,69 @@
 		<br>
 		<input type="checkbox" id="wholecheckbox" checked>Randomly generate whole notes?
 		<p></p>
-		<input type="range" id="minnote" min="0" max="25" value="0">
-		<br>
-		<span id="minnotedisplay">Lowest Note: </span>
-		<br>
-		<input type="range" id="maxnote" min="0" max="26" value="26">
-		<br>
-		<span id="maxnotedisplay">Highest Note: </span>
+		<div class="col-sm-10">
+			<input type="range" id="minnote" min="0" max="25" value="0">
+			<br>
+			<span id="minnotedisplay">Lowest Note: </span>
+			<br>
+			<input type="range" id="maxnote" min="0" max="26" value="26">
+			<br>
+			<span id="maxnotedisplay">Highest Note: </span>
+		</div>
 	</div>
-	<p></p>
-	<p>First, allow microphone access. Once calibrated, select a song and press play. You should then start playing the notes on
-		your instrument as the bar passes over them.</p>
-	<p>If you wish to change which notes will be randomly generated, please drag the sliders above. Check or uncheck the boxes
-		above if you want or don't want sharps and whole notes</p>
-	<p>Website will automatically use your microphone to determine whether you are playing the correct note: once you do, the note
-		will dissapear. You may then continue and play the next note.</p>
-	<p>If you don't play the notes while the bar passes over them, they will turn red. You should continue to the next note once
-		this happens.</p>
-	<p>Once the bar reaches the end (or every note is played if disabled) a new random sequence of notes is generated. Rinse and
-		repeat. Read and play the notes as fast as you can!</p>
-	<p>v10.00.00</p>
+	<div id="container" class="col-sm-6">
+		<img id="staff" src="Images\staff.png" alt="" width="900" height="230">
+		<img id="bar" src="Images\bar.png" alt="" width="2" height="230">
+		<img id="Extra" src="Images\halfnoteupwithline.png" alt="" width="29" height="70">
+		<img id="sharpExtra" src="Images\sharp.png" alt="" width="12" height="40">
+		<p>First, allow microphone access. Once calibrated, select a song and press play. You should then start playing the notes
+			on your instrument as the bar passes over them.</p>
+		<p>If you wish to change which notes will be randomly generated, please drag the sliders above. Check or uncheck the boxes
+			above if you want or don't want sharps and whole notes</p>
+		<p>Website will automatically use your microphone to determine whether you are playing the correct note: once you do, the
+			note will dissapear. You may then continue and play the next note.</p>
+		<p>If you don't play the notes while the bar passes over them, they will turn red. You should continue to the next note once
+			this happens.</p>
+		<p>Once the bar reaches the end (or every note is played if disabled) a new random sequence of notes is generated. Rinse and
+			repeat. Read and play the notes as fast as you can!</p>
+		<p>v10.00.00</p>
+	</div>
+
 	<style>
+		div[id="container"] {
+			position: relative
+		}
+
 		img[id="bar"] {
-			position: fixed;
+			position: absolute;
 			top: 0px;
 			left: 135px;
 		}
 
 		img[id^="note"] {
-			position: fixed;
-			top: 55px;
+			position: absolute;
+			top: 47px;
 			left: 200px;
 		}
 
 		img[id="Extra"] {
-			position: fixed;
-			top: 55px;
+			position: absolute;
+			top: 47px;
 			left: 870px;
 		}
 
 		img[id^="sharp"] {
-			position: fixed;
-			top: 97px;
+			position: absolute;
+			top: 89px;
 			left: 140px;
 		}
 
 		img[id="sharpExtra"] {
-			position: fixed;
-			top: 97px;
+			position: absolute;
+			top: 89px;
 			left: 860px;
 		}
 	</style>
-	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
 	<script src="main.js"></script>
 	<script src="songs.js"></script>
 	<script src="pageSetup.js"></script>
