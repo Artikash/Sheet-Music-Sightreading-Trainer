@@ -57,12 +57,14 @@ var barPosition = 135;
 var barDuration = 30000;
 
 $(window).on("load", function() {
-  var getUserMedia = navigator.getUserMedia;
-  getUserMedia = getUserMedia || navigator.webkitGetUserMedia;
-  getUserMedia = getUserMedia || navigator.mozGetUserMedia;
-  getUserMedia.call(navigator, { audio: true }, useAudioStream, function() {
-    $("#loading").text("Error: No Microphone");
-  });
+  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(useAudioStream).catch(function() {
+      $("#loading").text("Error: No Microphone");
+	});
+  else getUserMedia.call(navigator, { audio: true }, useAudioStream, function() {
+      $("#loading").text("Error: No Microphone");
+    });
   if ($("#barcheckbox").prop("checked")) {
     $("[id^='bpm']").fadeOut(0);
   }
